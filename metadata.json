@@ -1,0 +1,7 @@
+{
+  "name": "AlterEgo AI",
+  "description": "Cross into new realities with AI. Upload a photo and see yourself reimagined in different artistic styles and aesthetics. Use the Style Dice to discover endless creative possibilities. A modern, mobile-friendly experience to generate unique, watermarked images.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
