@@ -45,7 +45,6 @@ const watermarkStyles = StyleSheet.create({
  */
 export const useImageProcessor = () => {
     const [job, setJob] = useState<WatermarkJob | null>(null);
-    // FIX: Renamed to `imageCaptureRef` to resolve the "Cannot redeclare block-scoped variable" error, which was causing cascading JSX parsing failures.
     const imageCaptureRef = useRef<ViewShot>(null);
 
     // Callback triggered when the off-screen image has loaded.
