@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { CheckCircle } from 'lucide-react-native';
 import type { Style } from '../constants';
+import AnimatedButton from './AnimatedButton';
 
 interface StyleSelectionGridProps {
     styles: Style[];
@@ -15,17 +16,19 @@ interface StyleSelectionGridProps {
 
 const StyleItem = ({ item, isSelected, onToggle }: { item: Style, isSelected: boolean, onToggle: () => void }) => {
     return (
-        <TouchableOpacity 
+        <AnimatedButton 
             onPress={onToggle}
-            style={[sheetStyles.itemContainer, isSelected && sheetStyles.itemSelected]}
+            style={[componentStyles.itemContainer, isSelected && componentStyles.itemSelected]}
         >
-            {isSelected && (
-                <View style={sheetStyles.checkIcon}>
-                    <CheckCircle size={18} stroke="white" fill="#2563EB" />
-                </View>
-            )}
-            <Text style={sheetStyles.itemText}>{item.caption}</Text>
-        </TouchableOpacity>
+            <View style={{ flex: 1, justifyContent: 'flex-end'}}>
+                {isSelected && (
+                    <View style={componentStyles.checkIcon}>
+                        <CheckCircle size={18} stroke="white" fill="#2563EB" />
+                    </View>
+                )}
+                <Text style={componentStyles.itemText}>{item.caption}</Text>
+            </View>
+        </AnimatedButton>
     );
 };
 
@@ -34,40 +37,44 @@ const StyleSelectionGrid: React.FC<StyleSelectionGridProps> = ({ styles, selecte
         <FlatList
             data={styles}
             renderItem={({ item }) => (
-                <StyleItem
-                    item={item}
-                    isSelected={selectedStyles.has(item.caption)}
-                    onToggle={() => onToggleStyle(item.caption)}
-                />
+                // FIX: Use componentStyles to avoid conflict with the `styles` prop.
+                <View style={componentStyles.itemWrapper}>
+                    <StyleItem
+                        item={item}
+                        isSelected={selectedStyles.has(item.caption)}
+                        onToggle={() => onToggleStyle(item.caption)}
+                    />
+                </View>
             )}
             keyExtractor={item => item.caption}
             numColumns={3}
-            contentContainerStyle={sheetStyles.grid}
-            // Disabling scroll for now as the list is short, can be enabled if needed
+            // FIX: Use componentStyles to avoid conflict with the `styles` prop.
+            contentContainerStyle={componentStyles.grid}
             scrollEnabled={false} 
         />
     );
 };
 
-// FIX: Renamed from `styles` to `sheetStyles` to avoid a naming collision with the `styles` prop passed to the component.
-const sheetStyles = StyleSheet.create({
+// FIX: Renamed from `styles` to `componentStyles` to avoid conflict with the `styles` prop.
+const componentStyles = StyleSheet.create({
     grid: {
         width: '100%',
+    },
+    itemWrapper: {
+        flex: 1 / 3,
+        padding: 6,
     },
     itemContainer: {
         flex: 1,
         aspectRatio: 1,
         backgroundColor: '#27272A', // neutral-800
         borderRadius: 8,
-        justifyContent: 'flex-end',
         padding: 8,
-        margin: 6,
         borderWidth: 2,
         borderColor: 'transparent',
     },
     itemSelected: {
         borderColor: '#2563EB', // blue-600
-        transform: [{ scale: 1.05 }],
     },
     itemText: {
         fontFamily: 'Inter-Bold',
@@ -77,8 +84,8 @@ const sheetStyles = StyleSheet.create({
     },
     checkIcon: {
         position: 'absolute',
-        top: 8,
-        right: 8,
+        top: 0,
+        right: 0,
         zIndex: 1,
     }
 });

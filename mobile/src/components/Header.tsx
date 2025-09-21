@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Linking } from 'react-native';
 import { Coins, Crown, LayoutGrid, Star, History } from 'lucide-react-native';
 import Logo from './Logo';
 
@@ -16,6 +16,11 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ credits, isPro, onGetCredits, onShowFavorites, onShowHistory }) => {
+    
+    const handleMoreAppsClick = () => {
+        Linking.openURL('https://aistudio.google.com/apps').catch(err => console.error("Couldn't load page", err));
+    };
+
     return (
         <View style={styles.header}>
             <View style={styles.container}>
@@ -23,28 +28,23 @@ const Header: React.FC<HeaderProps> = ({ credits, isPro, onGetCredits, onShowFav
                 <View style={styles.actions}>
                     {isPro ? (
                         <View style={styles.proBadge}>
-                            {/* FIX: Changed color prop to stroke to fix type error */}
-                            <Crown size={16} stroke="#FBBF24" />
+                            <Crown size={16} color="#FBBF24" />
                             <Text style={styles.proText}>PRO</Text>
                         </View>
                     ) : (
                          <TouchableOpacity onPress={onGetCredits} style={styles.creditsButton}>
-                            {/* FIX: Changed color prop to stroke to fix type error */}
-                            <Coins size={20} stroke="#F59E0B" />
+                            <Coins size={20} color="#F59E0B" />
                             <Text style={styles.creditsText}>{credits}</Text>
                         </TouchableOpacity>
                     )}
                     <TouchableOpacity onPress={onShowHistory} style={styles.iconButton} >
-                        {/* FIX: Changed color prop to stroke to fix type error */}
-                        <History size={20} stroke="#D4D4D4" />
+                        <History size={20} color="#D4D4D4" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={onShowFavorites} style={styles.iconButton} >
-                        {/* FIX: Changed color prop to stroke to fix type error */}
-                        <Star size={20} stroke="#D4D4D4" />
+                        <Star size={20} color="#D4D4D4" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.iconButton}>
-                        {/* FIX: Changed color prop to stroke to fix type error */}
-                        <LayoutGrid size={20} stroke="#D4D4D4" />
+                    <TouchableOpacity onPress={handleMoreAppsClick} style={styles.iconButton}>
+                        <LayoutGrid size={20} color="#D4D4D4" />
                     </TouchableOpacity>
                 </View>
             </View>

@@ -4,17 +4,15 @@
 */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-
-// Note: Gradients would require an external library like 'react-native-linear-gradient'.
-// For simplicity, we'll use a solid color for the initial native migration.
+import LinearGradient from 'react-native-linear-gradient';
 
 interface LogoProps {
     size?: 'small' | 'large';
     style?: object;
-    bgClass?: string;
+    innerCircleBgColor?: string;
 }
 
-const Logo: React.FC<LogoProps> = ({ size = 'small', style }) => {
+const Logo: React.FC<LogoProps> = ({ size = 'small', style, innerCircleBgColor }) => {
     const sizeStyles = {
         small: {
             container: { height: 32, gap: 10 },
@@ -35,8 +33,13 @@ const Logo: React.FC<LogoProps> = ({ size = 'small', style }) => {
     return (
         <View style={[baseStyles.container, styles.container, style]}>
             <View style={[baseStyles.logoMark, styles.logoMark]}>
-                {/* FIX: Removed inline style object to fix typing error. Styles are now in StyleSheet.create */}
-                <View style={baseStyles.innerCircle} />
+                <LinearGradient
+                    colors={['#3B82F6', '#8B5CF6']}
+                    style={StyleSheet.absoluteFill}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                />
+                <View style={[baseStyles.innerCircle, innerCircleBgColor ? { backgroundColor: innerCircleBgColor } : {}]} />
                 <View style={[baseStyles.dot, styles.dot]} />
             </View>
             <Text style={[baseStyles.text, styles.text]}>
@@ -54,15 +57,14 @@ const baseStyles = StyleSheet.create({
     logoMark: {
         position: 'relative',
         borderRadius: 9999,
-        backgroundColor: '#60a5fa', // Blue-400 as a stand-in for gradient
         justifyContent: 'center',
         alignItems: 'center',
+        overflow: 'hidden', // Required for LinearGradient border-radius to work
     },
     innerCircle: {
         position: 'absolute',
         borderRadius: 9999,
         backgroundColor: '#18181B', // zinc-900
-        // FIX: Moved from JS object to StyleSheet to fix DimensionValue type error
         top: '15%',
         left: '15%',
         right: '15%',

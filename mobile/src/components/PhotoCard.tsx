@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { Download, RefreshCw, AlertTriangle, Share2, Heart, GitCompareArrows } from 'lucide-react-native';
+import AnimatedButton from './AnimatedButton';
+import TextScramble from './TextScramble';
 
 type ImageStatus = 'pending' | 'done' | 'error';
 
@@ -18,7 +20,7 @@ interface PhotoCardProps {
     onRegenerate?: () => void;
     onDownload?: () => void;
     onShare?: () => void;
-    onShareComparison?: () => void;
+    onShareComparison?: (originalUrl: string, generatedUrl: string, caption: string) => void;
     canRegenerate?: boolean;
     isFavorited?: boolean;
     onToggleFavorite?: (url: string, caption: string, originalUrl: string) => void;
@@ -37,14 +39,14 @@ const ErrorDisplay = ({ onRegenerate, canRegenerate }: { onRegenerate?: () => vo
         <Text style={styles.errorTitle}>Generation Failed</Text>
         <Text style={styles.errorText}>The model couldn't create this image.</Text>
         {onRegenerate && (
-            <TouchableOpacity 
+            <AnimatedButton 
                 onPress={onRegenerate} 
                 disabled={!canRegenerate}
                 style={[styles.regenerateButton, !canRegenerate && styles.disabledButton]}
             >
                 <RefreshCw size={14} stroke="#FCA5A5" /> 
                 <Text style={styles.regenerateText}>Try Again</Text>
-            </TouchableOpacity>
+            </AnimatedButton>
         )}
     </View>
 );
@@ -54,6 +56,12 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ imageUrl, originalImageUrl, capti
     const handleFavoriteClick = () => {
         if (onToggleFavorite && imageUrl && originalImageUrl) {
             onToggleFavorite(imageUrl, caption, originalImageUrl);
+        }
+    };
+
+    const handleShareComparisonClick = () => {
+        if (onShareComparison && originalImageUrl && imageUrl) {
+            onShareComparison(originalImageUrl, imageUrl, caption);
         }
     };
 
@@ -71,28 +79,28 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ imageUrl, originalImageUrl, capti
                 )}
             </View>
             <View style={styles.footer}>
-                <Text style={styles.caption} numberOfLines={1}>{caption}</Text>
+                {isSurprise && status === 'done' ? <TextScramble text={caption} style={styles.caption} /> : <Text style={styles.caption} numberOfLines={1}>{caption}</Text>}
                 
                 {status === 'done' && imageUrl && (
                     <View style={styles.actions}>
-                        <TouchableOpacity onPress={handleFavoriteClick} style={styles.actionButton}>
+                        <AnimatedButton onPress={handleFavoriteClick} style={styles.actionButton}>
                             <Heart size={18} stroke={isFavorited ? "#EF4444" : "#A1A1AA"} fill={isFavorited ? "#EF4444" : "none"} />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={onShareComparison} style={styles.actionButton}>
+                        </AnimatedButton>
+                        <AnimatedButton onPress={handleShareComparisonClick} style={styles.actionButton}>
                             <GitCompareArrows size={18} stroke="#A1A1AA" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={onRegenerate} style={styles.actionButton} disabled={!canRegenerate}>
+                        </AnimatedButton>
+                        <AnimatedButton onPress={onRegenerate} style={styles.actionButton} disabled={!canRegenerate}>
                             <RefreshCw size={18} stroke={canRegenerate ? "#A1A1AA" : "#52525B"} />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={onDownload} style={styles.actionButton}>
+                        </AnimatedButton>
+                        <AnimatedButton onPress={onDownload} style={styles.actionButton}>
                             <Download size={18} stroke="#A1A1AA" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={onShare} style={styles.actionButton}>
+                        </AnimatedButton>
+                        <AnimatedButton onPress={onShare} style={styles.actionButton}>
                             <Share2 size={18} stroke="#A1A1AA" />
-                        </TouchableOpacity>
+                        </AnimatedButton>
                     </View>
                 )}
-            </div>
+            </View>
         </View>
     );
 };

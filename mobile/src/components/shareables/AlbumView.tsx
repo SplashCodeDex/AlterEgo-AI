@@ -8,10 +8,6 @@ import Logo from '../Logo';
 
 interface AlbumViewProps {
   imageData: Record<string, string>;
-  // These props are not used for rendering but are passed through for the capture callback
-  action?: 'share' | 'download';
-  title?: string;
-  message?: string;
 }
 
 const AlbumView: React.FC<AlbumViewProps> = ({ imageData }) => {
@@ -21,7 +17,8 @@ const AlbumView: React.FC<AlbumViewProps> = ({ imageData }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Logo size="large" bgClass="#1a1a1a" />
+        {/* FIX: Replaced unsupported `bgClass` prop with `innerCircleBgColor`. */}
+        <Logo size="large" innerCircleBgColor="#1a1a1a" />
         <Text style={styles.subtitle}>My Multiverse</Text>
       </View>
       <View style={styles.grid}>

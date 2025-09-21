@@ -66,3 +66,7 @@ The application is divided into a web app and a mobile app. Both apps share a si
 *   **API Interaction:** The `geminiService.ts` service encapsulates all interaction with the Gemini API.
 *   **Error Handling:** The `geminiService.ts` service includes a retry mechanism and a fallback prompt for blocked prompts.
 *   **Watermarking:** The web app adds a watermark to the generated images. The mobile app has a `TODO` to implement this feature using a React Native-compatible library.
+
+# Project Roadmap
+
+The strategic direction, planned features, and development priorities for AlterEgo AI are tracked in our living roadmap document. Please refer to the `ToDo.md` file for the most up-to-date information on the project's future.

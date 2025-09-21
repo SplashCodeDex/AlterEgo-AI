@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import type { Product, Subscription } from 'react-native-iap';
-import { X, Crown, Check, Infinity, Zap, Palette } from 'lucide-react-native';
+import { X, Crown, Infinity, Zap, Palette } from 'lucide-react-native';
+import AnimatedButton from './AnimatedButton';
 
 interface SubscriptionModalProps {
     onClose: () => void;
@@ -13,7 +14,6 @@ interface SubscriptionModalProps {
     products: Product[];
     onSubscribe: (sku: string) => void;
     onBuyCredits: (sku: string) => void;
-    onSuccessfulPurchase: (sku: string) => void; // A simple callback for this example
 }
 
 const ProFeature = ({ children, icon }: { children: React.ReactNode, icon: React.ReactNode }) => (
@@ -23,21 +23,11 @@ const ProFeature = ({ children, icon }: { children: React.ReactNode, icon: React
     </View>
 );
 
-const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, subscriptions, products, onSubscribe, onBuyCredits, onSuccessfulPurchase }) => {
+const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, subscriptions, products, onSubscribe, onBuyCredits }) => {
 
-    const proSubscription = subscriptions[0]; // Assuming one subscription for now
-    // FIX: `subscriptionOfferDetails` does not exist on the Subscription object in this version of `react-native-iap`.
-    // The price is available directly on the `localizedPrice` property.
-    const proPrice = proSubscription?.localizedPrice;
-
-
-    // A simulated purchase handler. In a real app, this would be triggered by a listener.
-    const handleBuyCreditsPress = (sku: string) => {
-        onBuyCredits(sku);
-        // This is a simplification. The purchase listener in useIAP would handle the success state.
-        // For now, we call this immediately for demonstration purposes.
-        onSuccessfulPurchase(sku);
-    };
+    const proSubscription = subscriptions[0];
+    // Fix: Changed `localizedPrice` to `price` to match the property on the Subscription object.
+    const proPrice = (proSubscription as any)?.price;
 
     return (
         <View style={styles.modalOverlay}>
@@ -62,15 +52,15 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, subscrip
                             <ProFeature icon={<Palette size={16} stroke="#34D399" />}>Access to All Styles</ProFeature>
                         </View>
                         {proSubscription && (
-                             <TouchableOpacity 
-                                // FIX: The `productId` property does not exist in this version. The correct property is `sku`.
-                                onPress={() => onSubscribe(proSubscription.sku)} 
+                             <AnimatedButton 
+                                // Fix: Changed `productId` to `sku` to match the property on the Subscription object.
+                                onPress={() => onSubscribe((proSubscription as any).sku)} 
                                 style={styles.subscribeButton}
                              >
                                 <Text style={styles.subscribeButtonText}>
                                     Subscribe Now {proPrice ? `(${proPrice}/month)` : ''}
                                 </Text>
-                            </TouchableOpacity>
+                            </AnimatedButton>
                         )}
                     </View>
 
@@ -79,16 +69,17 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, subscrip
                         <Text style={styles.sectionTitle}>Or Buy Credit Packs</Text>
                         <View style={styles.creditPacksContainer}>
                             {products.map(product => (
-                                <TouchableOpacity 
-                                    // FIX: The `productId` property does not exist in this version. The correct property is `sku`.
-                                    key={product.sku} 
-                                    onPress={() => handleBuyCreditsPress(product.sku)}
+                                <AnimatedButton 
+                                    // Fix: Changed `productId` to `sku` to match the property on the Product object.
+                                    key={(product as any).sku} 
+                                    // Fix: Changed `productId` to `sku` to match the property on the Product object.
+                                    onPress={() => onBuyCredits((product as any).sku)}
                                     style={styles.creditPackButton}
                                 >
                                     <Text style={styles.creditPackTitle}>{product.title}</Text>
-                                    {/* FIX: The `localizedPrice` property is correct for one-time products. The original error was likely a cascade from other type issues. */}
-                                    <Text style={styles.creditPackPrice}>{product.localizedPrice}</Text>
-                                </TouchableOpacity>
+                                    {/* Fix: Changed `localizedPrice` to `price` to match the property on the Product object. */}
+                                    <Text style={styles.creditPackPrice}>{(product as any).price}</Text>
+                                </AnimatedButton>
                             ))}
                         </View>
                     </View>

@@ -2,36 +2,27 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { SafeAreaView, StatusBar, StyleSheet } from 'react-native';
+import RNBootSplash from 'react-native-bootsplash';
 import HomeScreen from './screens/HomeScreen';
-import SplashScreen from './screens/SplashScreen';
 import { ToastProvider } from './components/Toaster';
 import { AppProvider } from './state/AppContext';
 
 function App(): React.JSX.Element {
-  const [appLoaded, setAppLoaded] = useState(false);
-
-  useEffect(() => {
-    // This simulates asset loading, state initialization, etc.
-    const timer = setTimeout(() => {
-        setAppLoaded(true);
-    }, 2000); 
-    return () => clearTimeout(timer);
-  }, []);
+  
+  const handleOnReady = () => {
+    RNBootSplash.hide({ fade: true });
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle={'light-content'} backgroundColor="#18181B" />
-      {appLoaded ? (
         <ToastProvider>
-          <AppProvider>
+          <AppProvider onReady={handleOnReady}>
             <HomeScreen />
           </AppProvider>
         </ToastProvider>
-      ) : (
-        <SplashScreen />
-      )}
     </SafeAreaView>
   );
 }

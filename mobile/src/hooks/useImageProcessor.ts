@@ -78,23 +78,31 @@ export const useImageProcessor = () => {
     
     // The component to be rendered at a high level in the app tree.
     // It remains hidden off-screen and does not interact with user input.
-    // FIX: Corrected JSX structure and ref name. The original parsing errors were due to the redeclared ref variable.
-    const ImageProcessorComponent = (
-        job ? (
-            <View style={watermarkStyles.hiddenView} pointerEvents="none">
-                 <ViewShot ref={imageCaptureRef} options={{ format: 'png', quality: 0.95 }}>
-                    <ImageBackground 
-                        source={{ uri: job.imageUrl }} 
-                        style={watermarkStyles.watermarkContainer}
-                        onLoad={onImageLoad}
-                        onError={(e) => job.reject(new Error(e.nativeEvent.error))}
-                    >
-                        <Text style={watermarkStyles.watermarkText}>AlterEgo AI</Text>
-                    </ImageBackground>
-                </ViewShot>
-            </View>
-        ) : null
-    );
+    // This uses React.createElement to avoid JSX in a .ts file.
+    const ImageProcessorComponent = job
+        ? React.createElement(
+            View,
+            { style: watermarkStyles.hiddenView, pointerEvents: 'none' },
+            React.createElement(
+                ViewShot,
+                { ref: imageCaptureRef, options: { format: 'png', quality: 0.95 } },
+                React.createElement(
+                    ImageBackground,
+                    {
+                        source: { uri: job.imageUrl },
+                        style: watermarkStyles.watermarkContainer,
+                        onLoad: onImageLoad,
+                        onError: (e: { nativeEvent: { error: string } }) => job.reject(new Error(e.nativeEvent.error)),
+                    },
+                    React.createElement(
+                        Text,
+                        { style: watermarkStyles.watermarkText },
+                        'AlterEgo AI'
+                    )
+                )
+            )
+        )
+        : null;
 
     return { processImageWithWatermark, ImageProcessorComponent };
 }

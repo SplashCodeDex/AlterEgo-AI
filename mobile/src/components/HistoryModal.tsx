@@ -6,11 +6,12 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
 import { X, History as HistoryIcon, Trash2 } from 'lucide-react-native';
 import type { HistorySession } from '../types';
-import { useHistory } from '../lib/hooks';
 
 interface HistoryModalProps {
+    history: HistorySession[];
     onClose: () => void;
     onRestoreSession: (session: HistorySession) => void;
+    onClearHistory: () => void;
 }
 
 const timeAgo = (timestamp: number) => {
@@ -29,23 +30,23 @@ const timeAgo = (timestamp: number) => {
 };
 
 
-const HistoryModal: React.FC<HistoryModalProps> = ({ onClose, onRestoreSession }) => {
-    const { history, saveSessionToHistory } = useHistory(); // Note: we just need history here.
-
-    const handleClearHistory = () => {
-        // This is a bit of a hack to clear it, should be a function in the hook
-        // For now, it's just a placeholder.
-        console.warn("Clear history not fully implemented.");
-    };
-
+const HistoryModal: React.FC<HistoryModalProps> = ({ history, onClose, onRestoreSession, onClearHistory }) => {
     return (
         <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>Session History</Text>
-                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                        <X size={24} stroke="#A1A1AA" />
-                    </TouchableOpacity>
+                     <View style={styles.headerActions}>
+                        {history.length > 0 && (
+                            <TouchableOpacity onPress={onClearHistory} style={styles.clearButton}>
+                                <Trash2 size={16} stroke="#A1A1AA" />
+                                <Text style={styles.clearButtonText}>Clear</Text>
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                            <X size={24} stroke="#A1A1AA" />
+                        </TouchableOpacity>
+                    </View>
                 </View>
 
                 <View style={styles.content}>
@@ -108,6 +109,20 @@ const styles = StyleSheet.create({
         color: 'white',
         fontFamily: 'Sora-Bold',
     },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 16,
+    },
+    clearButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    clearButtonText: {
+        color: '#A1A1AA',
+        fontSize: 14,
+    },
     closeButton: {
         padding: 4,
     },
@@ -127,7 +142,6 @@ const styles = StyleSheet.create({
         width: 64,
         height: 64,
         borderRadius: 6,
-        objectFit: 'cover',
     },
     sessionDetails: {
         flex: 1,

@@ -10,10 +10,6 @@ interface ComparisonViewProps {
   originalImageUrl: string;
   generatedImageUrl: string;
   caption: string;
-  // These props are not used for rendering but are passed through for the capture callback
-  action?: 'share' | 'download';
-  title?: string;
-  message?: string;
 }
 
 const ComparisonView: React.FC<ComparisonViewProps> = ({ originalImageUrl, generatedImageUrl, caption }) => {
@@ -29,7 +25,8 @@ const ComparisonView: React.FC<ComparisonViewProps> = ({ originalImageUrl, gener
           <Image source={{ uri: generatedImageUrl }} style={styles.image} resizeMode="cover" />
         </View>
       </View>
-      <Logo size="small" bgClass="#1a1a1a" style={styles.logo} />
+      {/* FIX: Replaced unsupported `bgClass` prop with `innerCircleBgColor`. */}
+      <Logo size="small" innerCircleBgColor="#1a1a1a" style={styles.logo} />
     </View>
   );
 };

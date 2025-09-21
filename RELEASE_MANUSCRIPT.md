@@ -4,6 +4,105 @@ This document serves as the definitive log of significant architectural decision
 
 ---
 
+## **Version 2.3: Architectural Purity & Final Polish**
+
+**Date:** 2024-08-02
+
+**Author:** CodeDeX's Mastermind Assistant
+
+### **1. Executive Summary**
+
+This release focuses on the final, critical steps to ensure the mobile application is not just functional but architecturally sound, maintainable, and visually consistent with the brand. The core state management logic in `AppContext` has been refactored for purity, and the native logo has been updated to match the web version, completing the production-readiness push.
+
+### **2. Key Improvements & Decisions**
+
+#### **2.1. Architectural Refactor: `AppContext` Purity**
+
+*   **Problem:** The `AppProvider` component in `mobile/src/state/AppContext.tsx` had become overly complex, directly containing the definitions for dozens of asynchronous action handlers (`handleGenerateClick`, `handleImageResponse`, etc.). This intermingled React component lifecycle logic with application business logic, making the component difficult to read and test.
+*   **Decision:** All asynchronous action logic has been extracted from the component body into a single `createActions` factory function within the same file. This function takes `dispatch` and other dependencies as arguments and returns a memoized object of all action handlers. The `AppProvider` component now simply calls this factory function to create its actions.
+*   **Reasoning:** This enforces a clean separation of concerns. The `AppProvider` is now solely responsible for providing the context and managing its lifecycle, while the `createActions` function contains the pure business logic. This pattern makes the codebase significantly more modular, testable, and easier for future developers to understand.
+
+#### **2.2. Visual Polish: Native Gradient Logo**
+
+*   **Problem:** The native mobile app's logo used a solid blue color as a placeholder, which was inconsistent with the signature blue-to-purple gradient used in the web application's branding.
+*   **Decision:** Integrate the `react-native-linear-gradient` library to implement a true gradient in the native `Logo` component.
+*   **Reasoning:** Brand consistency is critical for a professional user experience. This final visual polish ensures the AlterEgo AI brand is instantly recognizable and consistent across all platforms.
+
+#### **2.3. Documenting Technical Debt: IAP Type Assertion**
+
+*   **Problem:** The `useIAP.ts` hook uses a type assertion (`(purchase as any)`) to access properties from the `react-native-iap` library. While functional, this is a code smell that bypasses TypeScript's type safety.
+*   **Decision:** This change is intentionally left in place. The type assertion is a pragmatic workaround for potential inconsistencies in the third-party library's type definitions across different versions. Aggressively trying to "fix" this could introduce instability. The decision to use it has been explicitly documented here to inform future maintenance.
+*   **Reasoning:** A key part of senior engineering is recognizing when a pragmatic solution is better than a theoretically pure one, and clearly documenting that decision to manage technical debt.
+
+---
+
+## **Version 2.2: Native Splash Screen & Feature Polish**
+
+**Date:** 2024-08-01
+
+**Author:** Jules AI
+
+### **1. Executive Summary**
+
+This release finalizes the native app's production readiness by replacing the temporary JavaScript-based splash screen with a true native solution and achieving feature parity with the web app's UI effects. The goal is to deliver an instant-on, polished user experience that meets the standards for app store submission.
+
+### **2. Key Improvements & Decisions**
+
+#### **2.1. True Native Splash Screen**
+
+*   **Problem:** The previous JavaScript-based splash screen only appeared *after* the React Native bridge initialized, leaving a blank white screen on initial app launch. This feels slow and unprofessional.
+*   **Decision:** Integrate the `react-native-bootsplash` library. This allows the splash screen to be displayed natively and instantly the moment the user taps the app icon. The JavaScript logic was refactored to hide this native splash screen only when the application's core data has been fully hydrated from storage.
+*   **Reasoning:** An instant-on experience is critical for user retention and perceived performance. A native splash screen is the industry standard for production applications and provides a seamless transition from app launch to the interactive UI.
+
+#### **2.2. Feature Parity: Text Scramble Effect**
+
+*   **Problem:** The native app was missing the dynamic "text scramble" animation for "Surprise Me!" style captions that was a key UI polish feature in the original web version. This created an inconsistent experience.
+*   **Decision:** Port the `TextScramble` component from the web app's `PhotoCard` to a new, reusable React Native component. This new component was then integrated into the native `PhotoCard`.
+*   **Reasoning:** Achieving feature parity ensures a consistent brand and user experience, regardless of the platform. Small UI polish details like this significantly contribute to the overall quality and "magic" of the application.
+
+---
+
+## **Version 2.1: Native Experience & Production Hardening**
+
+**Date:** 2024-07-31
+
+**Author:** CodeDeX's Mastermind Assistant
+
+### **1. Executive Summary**
+
+This release focuses on elevating the native mobile application from a functional port to a polished, production-ready product. The primary goals were to enhance the "native feel" through animations and tactile feedback, harden the application's architecture for stability and reliability, and fix critical bugs in the monetization flow.
+
+### **2. Key Improvements & Decisions**
+
+#### **2.1. UX Enhancement: Animated `GeneratingView`**
+
+*   **Problem:** The view shown during image generation was static, which felt unresponsive and did not provide an engaging user experience during the wait time.
+*   **Decision:** Completely rebuild the `GeneratingView` using React Native's core `Animated` API. The new implementation features a fluid, dynamic card stack animation.
+*   **Reasoning:** Providing rich, performant animations is a key differentiator for native applications. This change significantly improves the perceived quality of the app, making the waiting period feel interactive and polished rather than static and boring.
+
+#### **2.2. Architectural Hardening: Centralized State Persistence**
+
+*   **Problem:** The previous state management in `AppContext` had side effects within its reducer (calling `AsyncStorage.setItem`). This is an anti-pattern that makes state changes unpredictable and harder to debug. Logic for managing history and favorites was also still accessible via legacy hooks.
+*   **Decision:**
+    1.  Make the `appReducer` a pure function by removing all `AsyncStorage` calls.
+    2.  Implement a single, centralized `useEffect` hook within the `AppProvider` that is responsible for persisting all relevant state slices (`credits`, `favorites`, `history`) to `AsyncStorage` whenever they change.
+    3.  Delete the now-redundant `mobile/src/lib/hooks.ts` file and fully encapsulate its logic within the `AppContext`.
+*   **Reasoning:** This enforces a unidirectional data flow and makes state management predictable and easier to reason about. The reducer is now only responsible for calculating the next state, while the `useEffect` hook handles the side effect of persistence. This is a more robust and scalable architecture.
+
+#### **2.3. Production-Ready In-App Purchases (IAP)**
+
+*   **Problem:** The IAP flow was brittle. The UI components were directly responsible for assuming a purchase was successful and updating the app's state. This could lead to bugs where a user is not granted credits even after a successful purchase, or vice-versa.
+*   **Decision:** Decouple the UI from the purchase validation logic. The `useIAP` hook was refactored to accept an `onPurchaseVerified` callback. The UI components now only *initiate* a purchase. The hook's internal `purchaseUpdatedListener` is the single source of truth; only after it receives a successful event from the store and finishes the transaction does it invoke the callback to securely update the application's global state.
+*   **Reasoning:** This creates a secure and reliable transaction flow. The app's state (e.g., user credits) is only modified after the respective app store has confirmed and finalized the purchase, preventing race conditions and potential fraud.
+
+#### **2.4. Enhanced Tactile Feedback**
+
+*   **Problem:** The application lacked the subtle physical feedback that users expect from a high-quality native app. Taps on buttons felt static.
+*   **Decision:** Create a new reusable `AnimatedButton` component that provides a subtle "scale" animation on press. This component was then integrated into all major interactive elements across the application (`HomeScreen`, `PhotoCard`, `SubscriptionModal`, etc.), replacing standard `TouchableOpacity`.
+*   **Reasoning:** Small details like tactile feedback significantly contribute to the overall "native feel" and perceived quality of an application. This simple, reusable component adds a layer of polish to the entire user experience.
+
+---
+
 ## **Version 2.0: The Native Mobile Initiative**
 
 **Date:** 2024-07-30
@@ -65,6 +164,38 @@ As the first step of this migration, the following foundational work has been co
     *   **Decision**: As an iterative step, a JavaScript-based splash screen has been implemented. This screen displays the application's logo and is shown for a brief period while the main application components and state are initialized in the background.
     *   **Reasoning**: This provides immediate visual feedback to the user upon opening the app, creating a more professional feel. It serves as a placeholder and functional proof-of-concept for a future native splash screen implementation (e.g., using `react-native-bootsplash`), which is the next planned step.
     *   **Impact**: The user now sees a branded loading screen instead of a blank white view, significantly improving the perceived startup performance and overall polish of the application.
+
+---
+
+## **Version 1.3.0: Critical Security Refactor - Backend API Proxy**
+
+**Date:** 2024-08-02
+
+**Author:** CodeDeX's Mastermind Assistant
+
+### **1. Executive Summary**
+
+This release addresses the single most critical security vulnerability in the application: the exposure of the Google Gemini API key on the client side. A secure backend proxy has been implemented using **Firebase Functions**, which now handles all communication with the Gemini API. This is a non-negotiable step for any production application to prevent API key theft and fraudulent usage.
+
+### **2. Architectural Decision: Firebase Functions for Backend**
+
+*   **Problem:** The API key was embedded in the web and mobile application's code, making it trivial to extract and abuse.
+*   **Decision:**
+    1.  Create a serverless backend using Firebase Functions. The function, named `transformImage`, is responsible for receiving image data and a prompt from the client.
+    2.  The Gemini API key is stored securely as an environment variable within the Firebase project configuration, inaccessible to the outside world.
+    3.  The backend function calls the Gemini API and returns the result to the client.
+*   **Reasoning:**
+    *   **Security:** This is the industry-standard approach to protect secret keys. The key never leaves the secure server environment.
+    *   **Centralized Logic:** AI-related logic (prompts, model parameters, error handling) is now centralized in one place, simplifying updates for both web and mobile clients.
+    *   **Scalability & Cost-Effectiveness:** Firebase Functions auto-scale with demand and operate on a pay-per-use model, which is ideal for this application's workload.
+
+### **3. Impact on Client Applications**
+
+*   **`services/geminiService.ts` (Web & Mobile):** Both service files have been completely refactored.
+    *   All direct `@google/genai` SDK code has been **removed**.
+    *   The web client now makes a `fetch` request to a relative `/api/transform` endpoint, which is routed to the Firebase Function by Firebase Hosting's rewrite rules.
+    *   The mobile client uses the `@react-native-firebase/functions` SDK to make a secure, type-safe call to the `transformImage` callable function.
+*   **Result:** The client applications are now significantly simpler and more secure. They are only responsible for UI and state, not for direct interaction with the AI service.
 
 ---
 

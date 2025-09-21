@@ -2,11 +2,11 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ToastProvider } from './components/Toaster';
+import { AppProvider } from './state/AppContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -17,7 +17,9 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ToastProvider>
-      <App />
+      <AppProvider>
+        <App />
+      </AppProvider>
     </ToastProvider>
   </React.StrictMode>
 );

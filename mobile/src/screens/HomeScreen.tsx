@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Modal, FlatList, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Image, Modal, FlatList, Dimensions, ActivityIndicator } from 'react-native';
 import ViewShot from 'react-native-view-shot';
 import Header from '../components/Header';
 import Logo from '../components/Logo';
@@ -14,9 +14,9 @@ import GeneratingView from '../components/GeneratingView';
 import PhotoCard from '../components/PhotoCard';
 import HistoryModal from '../components/HistoryModal';
 import FavoritesModal from '../components/FavoritesModal';
-import { saveToCameraRoll, shareImage } from '../lib/nativeSharing';
 import { useToasts } from '../components/Toaster';
 import { useAppContext } from '../state/AppContext';
+import AnimatedButton from '../components/AnimatedButton';
 
 const primaryButtonStyles = StyleSheet.create({
     button: {
@@ -27,11 +27,6 @@ const primaryButtonStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
-        shadowColor: "#2563EB",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 5,
     },
     text: {
         fontFamily: 'Inter-Bold',
@@ -82,172 +77,178 @@ const HomeScreen = () => {
     const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
     const flatListWidth = Dimensions.get('window').width;
 
-    const renderContent = () => {
-        switch (state.appState) {
-            case 'idle':
-                return (
-                    <View style={styles.idleContainer}>
-                        {state.latestHistorySession ? (
-                             <View style={styles.idleContainer}>
-                                <Logo size="large" style={styles.logo} />
-                                <Text style={styles.welcomeBackText}>Welcome Back!</Text>
-                                <View style={styles.historyPreviewContainer}>
-                                     {Object.values(state.latestHistorySession.generatedImages)
-                                        .filter(img => img.status === 'done' && img.url)
-                                        .slice(0, 3)
-                                        .map((image, index) => (
-                                            <View key={index} style={styles.historyPreviewItem}>
-                                                <Image source={{ uri: image.url }} style={styles.historyPreviewImage} />
-                                            </View>
-                                        ))}
+    const renderIdleView = () => (
+        <View style={styles.idleContainer}>
+            {state.latestHistorySession ? (
+                 <View style={styles.idleContainer}>
+                    <Logo size="large" style={styles.logo} />
+                    <Text style={styles.welcomeBackText}>Welcome Back!</Text>
+                    <View style={styles.historyPreviewContainer}>
+                         {Object.values(state.latestHistorySession.generatedImages)
+                            .filter(img => img.status === 'done' && img.url)
+                            .slice(0, 3)
+                            .map((image, index) => (
+                                <View key={index} style={styles.historyPreviewItem}>
+                                    <Image source={{ uri: image.url }} style={styles.historyPreviewImage} />
                                 </View>
-                                <View style={styles.buttonContainer}>
-                                    <TouchableOpacity onPress={() => actions.handleRestoreSession(state.latestHistorySession!)} style={primaryButtonStyles.button}>
-                                        <Text style={primaryButtonStyles.text}>View Session</Text>
-                                    </TouchableOpacity>
-                                     <TouchableOpacity onPress={actions.handleUploadPhoto} style={secondaryButtonStyles.button}>
-                                        <Text style={secondaryButtonStyles.text}>Start New</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        ) : (
-                            <>
-                                <Logo size="large" style={styles.logo} />
-                                <Text style={styles.tagline}>
-                                    Cross into new realities. Upload a photo to see your digital self.
-                                </Text>
-                                <View style={styles.infoCardsContainer}>
-                                    <InfoCard 
-                                        icon={<Infinity size={32} stroke="#60A5FA" />} 
-                                        title="Unlimited Styles" 
-                                        text="From vintage classics to futuristic visions."
-                                    />
-                                    <InfoCard 
-                                        icon={<Palette size={32} stroke="#A78BFA" />} 
-                                        title="Surprise Me!" 
-                                        text="Discover unique styles from Pop Art to Cyberpunk."
-                                    />
-                                    <InfoCard 
-                                        icon={<Gift size={32} stroke="#34D399" />} 
-                                        title="Free Album" 
-                                        text="Get a beautiful collage of all your results."
-                                    />
-                                </View>
-                                <View style={styles.buttonContainer}>
-                                    <TouchableOpacity style={primaryButtonStyles.button} onPress={actions.handleUploadPhoto}>
-                                        <FileImage size={24} stroke="white" />
-                                        <Text style={primaryButtonStyles.text}>Upload Photo</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={secondaryButtonStyles.button} onPress={actions.handleTakePhoto}>
-                                        <Camera size={24} stroke="#D4D4D4" />
-                                        <Text style={secondaryButtonStyles.text}>Take Photo</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </>
-                        )}
-                    </View>
-                );
-            case 'image-uploaded':
-                return state.uploadedImage && (
-                     <View style={styles.selectionContainer}>
-                        <View style={styles.selectionHeader}>
-                            <Text style={styles.selectionTitle}>Choose Your Alter Egos</Text>
-                            <Text style={styles.selectionSubtitle}>Select the styles you want to generate.</Text>
-                        </View>
-                        
-                        <Image source={{ uri: state.uploadedImage }} style={styles.thumbnail} />
-
-                        <StyleSelectionGrid 
-                            styles={state.currentStyles}
-                            selectedStyles={state.selectedStyles}
-                            onToggleStyle={actions.handleToggleStyle}
-                        />
-
-                        <View style={styles.generateButtonContainer}>
-                            <TouchableOpacity style={secondaryButtonStyles.button} onPress={actions.handleShuffleStyles}>
-                                <Dices size={24} stroke="#D4D4D4" />
-                            </TouchableOpacity>
-                             <TouchableOpacity 
-                                style={[primaryButtonStyles.button, state.selectedStyles.size === 0 && styles.disabledButton]} 
-                                onPress={actions.handleGenerateClick}
-                                disabled={state.selectedStyles.size === 0}
-                             >
-                                <Sparkles size={24} stroke="white" />
-                                <Text style={primaryButtonStyles.text}>
-                                    {state.isPro ? 'Generate' : `Generate (${state.selectedStyles.size} Credits)`}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                );
-            case 'generating':
-                return state.uploadedImage && (
-                    <GeneratingView
-                        uploadedImage={state.uploadedImage}
-                        generatedImages={state.generatedImages}
-                        generatingIndex={state.generatingIndex}
-                        styles={state.activeSessionStyles}
-                        onCancel={() => { /* TODO */ }}
-                    />
-                );
-            case 'results-shown':
-                return (
-                    <View style={styles.resultsContainer}>
-                        <FlatList
-                            data={state.activeSessionStyles}
-                            renderItem={({ item: style }) => {
-                                const image = state.generatedImages[style];
-                                return (
-                                    <View style={[styles.carouselItem, { width: flatListWidth }]}>
-                                        <PhotoCard
-                                            caption={image?.caption || style}
-                                            isSurprise={style === 'Surprise Me!'}
-                                            status={image?.status || 'pending'}
-                                            imageUrl={image?.url}
-                                            originalImageUrl={state.uploadedImage}
-                                            error={image?.error}
-                                            onRegenerate={() => actions.handleRegenerateStyle(style)}
-                                            onDownload={() => image?.url && saveToCameraRoll(image.url, 'photo').then(() => addToast(`${image.caption} saved to photos.`, 'success'))}
-                                            onShare={() => image?.url && shareImage(image.url, `My ${image.caption} Look!`, `Generated by AlterEgo AI`)}
-                                            onShareComparison={() => state.uploadedImage && image?.url && actions.handleShareComparison(state.uploadedImage, image.url, image.caption)}
-                                            canRegenerate={state.isPro || state.credits >= 1}
-                                            isFavorited={!!(image?.url && state.favoritedImages[image.url])}
-                                            onToggleFavorite={actions.toggleFavorite}
-                                        />
-                                    </View>
-                                );
-                            }}
-                            keyExtractor={item => item}
-                            horizontal
-                            pagingEnabled
-                            showsHorizontalScrollIndicator={false}
-                            onViewableItemsChanged={onViewableItemsChanged}
-                            viewabilityConfig={viewabilityConfig}
-                            style={{ flexGrow: 0 }}
-                        />
-                        <View style={styles.dotsContainer}>
-                            {state.activeSessionStyles.map((_, index) => (
-                                <View 
-                                    key={index}
-                                    style={[styles.dot, state.activeIndex === index ? styles.activeDot : {}]}
-                                />
                             ))}
-                        </View>
-                         <View style={styles.resultsActions}>
-                             <TouchableOpacity style={primaryButtonStyles.button} onPress={actions.handleDownloadAlbum}>
-                                <Text style={primaryButtonStyles.text}>Download Album</Text>
-                            </TouchableOpacity>
-                             <TouchableOpacity style={primaryButtonStyles.button} onPress={actions.handleShareAlbum}>
-                                <Text style={primaryButtonStyles.text}>Share Album</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={secondaryButtonStyles.button} onPress={actions.handleReset}>
-                                <Text style={secondaryButtonStyles.text}>Start Over</Text>
-                            </TouchableOpacity>
-                        </View>
                     </View>
-                );
-            default:
-                return null;
+                    <View style={styles.buttonContainer}>
+                        <AnimatedButton onPress={() => actions.handleRestoreSession(state.latestHistorySession!)} style={primaryButtonStyles.button}>
+                            <Text style={primaryButtonStyles.text}>View Session</Text>
+                        </AnimatedButton>
+                         <AnimatedButton onPress={actions.handleUploadPhoto} style={secondaryButtonStyles.button}>
+                            <Text style={secondaryButtonStyles.text}>Start New</Text>
+                        </AnimatedButton>
+                    </View>
+                </View>
+            ) : (
+                <>
+                    <Logo size="large" style={styles.logo} />
+                    <Text style={styles.tagline}>
+                        Cross into new realities. Upload a photo to see your digital self.
+                    </Text>
+                    <View style={styles.infoCardsContainer}>
+                        <InfoCard 
+                            icon={<Infinity size={32} stroke="#60A5FA" />} 
+                            title="Unlimited Styles" 
+                            text="From vintage classics to futuristic visions."
+                        />
+                        <InfoCard 
+                            icon={<Palette size={32} stroke="#A78BFA" />} 
+                            title="Surprise Me!" 
+                            text="Discover unique styles from Pop Art to Cyberpunk."
+                        />
+                        <InfoCard 
+                            icon={<Gift size={32} stroke="#34D399" />} 
+                            title="Free Album" 
+                            text="Get a beautiful collage of all your results."
+                        />
+                    </View>
+                    <View style={styles.buttonContainer}>
+                        <AnimatedButton style={primaryButtonStyles.button} onPress={actions.handleUploadPhoto}>
+                            <FileImage size={24} stroke="white" />
+                            <Text style={primaryButtonStyles.text}>Upload Photo</Text>
+                        </AnimatedButton>
+                        <AnimatedButton style={secondaryButtonStyles.button} onPress={actions.handleTakePhoto}>
+                            <Camera size={24} stroke="#D4D4D4" />
+                            <Text style={secondaryButtonStyles.text}>Take Photo</Text>
+                        </AnimatedButton>
+                    </View>
+                </>
+            )}
+        </View>
+    );
+
+    const renderSelectionView = () => state.uploadedImage && (
+        <View style={styles.selectionContainer}>
+           <View style={styles.selectionHeader}>
+               <Text style={styles.selectionTitle}>Choose Your Alter Egos</Text>
+               <Text style={styles.selectionSubtitle}>Select the styles you want to generate.</Text>
+           </View>
+           
+           <Image source={{ uri: state.uploadedImage }} style={styles.thumbnail} />
+
+           <StyleSelectionGrid 
+               styles={state.currentStyles}
+               selectedStyles={state.selectedStyles}
+               onToggleStyle={actions.handleToggleStyle}
+           />
+
+           <View style={styles.generateButtonContainer}>
+               <AnimatedButton style={secondaryButtonStyles.button} onPress={actions.handleShuffleStyles}>
+                   <Dices size={24} stroke="#D4D4D4" />
+               </AnimatedButton>
+                <AnimatedButton 
+                   style={[primaryButtonStyles.button, state.selectedStyles.size === 0 && styles.disabledButton]} 
+                   onPress={actions.handleGenerateClick}
+                   disabled={state.selectedStyles.size === 0}
+                >
+                   <Sparkles size={24} stroke="white" />
+                   <Text style={primaryButtonStyles.text}>
+                       {state.isPro ? 'Generate' : `Generate (${state.selectedStyles.size} Credits)`}
+                   </Text>
+               </AnimatedButton>
+           </View>
+       </View>
+    );
+
+    const renderGeneratingView = () => state.uploadedImage && (
+        <GeneratingView
+            uploadedImage={state.uploadedImage}
+            generatedImages={state.generatedImages}
+            generatingIndex={state.generatingIndex}
+            styleCaptions={state.activeSessionStyles}
+            onCancel={actions.handleCancelGeneration}
+        />
+    );
+
+    const renderResultsView = () => (
+        <View style={styles.resultsContainer}>
+            <FlatList
+                data={state.activeSessionStyles}
+                renderItem={({ item: style }) => {
+                    const image = state.generatedImages[style];
+                    return (
+                        <View style={[styles.carouselItem, { width: flatListWidth }]}>
+                            <PhotoCard
+                                caption={image?.caption || style}
+                                isSurprise={style === 'Surprise Me!'}
+                                status={image?.status || 'pending'}
+                                imageUrl={image?.url}
+                                originalImageUrl={state.uploadedImage}
+                                error={image?.error}
+                                onRegenerate={() => actions.handleRegenerateStyle(style)}
+                                onDownload={() => image?.url && actions.handleSaveToCameraRoll(image.url).then(() => addToast(`${image.caption} saved to photos.`, 'success'))}
+                                onShare={() => image?.url && actions.handleShareImage(image.url, `My ${image.caption} Look!`, `Generated by AlterEgo AI`)}
+                                onShareComparison={() => state.uploadedImage && image?.url && actions.handleShareComparison(state.uploadedImage, image.url, image.caption)}
+                                canRegenerate={state.isPro || state.credits >= 1}
+                                isFavorited={!!(image?.url && state.favoritedImages[image.url])}
+                                onToggleFavorite={actions.toggleFavorite}
+                            />
+                        </View>
+                    );
+                }}
+                keyExtractor={item => item}
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
+                style={{ flexGrow: 0 }}
+            />
+            <View style={styles.dotsContainer}>
+                {state.activeSessionStyles.map((_, index) => (
+                    <View 
+                        key={index}
+                        style={[styles.dot, state.activeIndex === index ? styles.activeDot : {}]}
+                    />
+                ))}
+            </View>
+             <View style={styles.resultsActions}>
+                 <AnimatedButton style={primaryButtonStyles.button} onPress={actions.handleDownloadAlbum}>
+                    <Text style={primaryButtonStyles.text}>Download Album</Text>
+                </AnimatedButton>
+                 <AnimatedButton style={primaryButtonStyles.button} onPress={actions.handleShareAlbum}>
+                    <Text style={primaryButtonStyles.text}>Share Album</Text>
+                </AnimatedButton>
+                <AnimatedButton style={secondaryButtonStyles.button} onPress={actions.handleReset}>
+                    <Text style={secondaryButtonStyles.text}>Start Over</Text>
+                </AnimatedButton>
+            </View>
+        </View>
+    );
+
+    const renderContent = () => {
+        if (!state.hydrated) {
+            return <ActivityIndicator size="large" color="#A1A1AA" />;
+        }
+        switch (state.appState) {
+            case 'idle': return renderIdleView();
+            case 'image-uploaded': return renderSelectionView();
+            case 'generating': return renderGeneratingView();
+            case 'results-shown': return renderResultsView();
+            default: return null;
         }
     };
 
@@ -291,7 +292,6 @@ const HomeScreen = () => {
                     products={iap.products}
                     onSubscribe={iap.requestSubscription}
                     onBuyCredits={iap.requestPurchase}
-                    onSuccessfulPurchase={actions.onSuccessfulPurchase}
                 />
             </Modal>
             
@@ -302,8 +302,10 @@ const HomeScreen = () => {
                 onRequestClose={() => actions.closeModal('history')}
             >
                 <HistoryModal 
+                    history={state.history}
                     onClose={() => actions.closeModal('history')}
                     onRestoreSession={actions.handleRestoreSession}
+                    onClearHistory={actions.handleClearHistory}
                 />
             </Modal>
             
@@ -317,8 +319,8 @@ const HomeScreen = () => {
                     images={Object.values(state.favoritedImages)}
                     onClose={() => actions.closeModal('favorites')}
                     onToggleFavorite={actions.toggleFavorite}
-                    onDownload={(url) => saveToCameraRoll(url, 'photo').then(() => addToast('Image saved to photos.', 'success'))}
-                    onShare={(url, caption) => shareImage(url, `My ${caption} Look!`, `Check out my ${caption} photo generated by AlterEgo AI! #AlterEgoAI`)}
+                    onDownload={(url, caption) => actions.handleSaveToCameraRoll(url).then(() => addToast(`${caption} saved to photos.`, 'success'))}
+                    onShare={(url, caption) => actions.handleShareImage(url, `My ${caption} Look!`, `Check out my ${caption} photo generated by AlterEgo AI! #AlterEgoAI`)}
                     onShareComparison={actions.handleShareComparison}
                 />
             </Modal>
