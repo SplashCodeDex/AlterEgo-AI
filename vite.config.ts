@@ -14,6 +14,15 @@ export default defineConfig(({ mode }) => {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
+      },
+      server: {
+        proxy: {
+          '/api': {
+            target: 'http://localhost:5001',
+            changeOrigin: true,
+            rewrite: (path) => path.replace(/^\/api/, '/alterego-ai-mobile/us-central1')
+          }
+        }
       }
     };
 });

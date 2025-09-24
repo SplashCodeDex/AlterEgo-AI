@@ -11,7 +11,7 @@ import SplashScreen from './components/SplashScreen';
 import Logo from './components/Logo';
 import GeneratingView from './components/GeneratingView';
 import type { GeneratedImage } from './types';
-import { useAppContext } from './state/AppContext';
+import { useAppContext } from './src/state/AppContext';
 
 // Lazy load heavy components
 const GetCreditsModal = lazy(() => import('./components/GetCreditsModal'));

@@ -6,7 +6,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ToastProvider } from './components/Toaster';
-import { AppProvider } from './state/AppContext';
+import { AppProvider } from './src/state/AppContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

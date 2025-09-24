@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
 */
 import React, { createContext, useContext, useReducer, useEffect, useCallback, ChangeEvent, useRef } from 'react';
-import { useToasts } from '../components/Toaster';
-import { useLocalStorageState, useFavorites, useHistory } from '../lib/hooks';
-import type { GeneratedImage, HistorySession } from '../types';
-import { generateStyledImage } from '../services/geminiService';
-import { createAlbumPage, createComparisonImage } from '../lib/albumUtils';
+import { useToasts } from '../../components/Toaster';
+import { useLocalStorageState, useFavorites, useHistory } from '../../lib/hooks';
+import type { GeneratedImage, HistorySession } from '../../types';
+import { generateStyledImage } from '../../services/geminiService';
+import { createAlbumPage, createComparisonImage } from '../../lib/albumUtils';
 import JSZip from 'jszip';
 import { ALL_STYLES, DEFAULT_STYLES, SURPRISE_STYLES, Style } from '../constants';
 import { PartyPopper } from 'lucide-react';
