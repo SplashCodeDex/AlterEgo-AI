@@ -1,5 +1,22 @@
 # Jules AI Agent Instructions for AlterEgo AI
 
+## 🚨 Current Status and Plan (as of 2025-09-24) 🚨
+
+This section has been added by Jules to track the progress of debugging the application.
+
+### Identified Issues:
+1.  **Web App is Not Functional:** Despite previous reports, the web application is unable to connect to the backend. It receives a 404 Not Found error when calling the `/api/transform` endpoint. This is likely due to a misconfiguration in the Vite proxy settings.
+2.  **Android Build is Failing:** The Android application fails to build due to a React Native autolinking error, as documented in `BUILD_ISSUES_AND_SOLUTIONS.md`.
+3.  **iOS Build is Untested:** The status of the iOS build is unknown.
+
+### Action Plan:
+1.  **Fix Web App:** Investigate and correct the Vite proxy configuration to ensure the web app can communicate with the Firebase Functions backend.
+2.  **Fix Android Build:** Attempt to resolve the autolinking issue by upgrading the React Native version.
+3.  **Test iOS Build:** Once the web and Android apps are functional, attempt to build and test the iOS application.
+4.  **Full System Test:** Verify end-to-end functionality for all three platforms (Web, Android, iOS).
+
+---
+
 This document provides instructions for Jules, the AI development agent, on how to work with the AlterEgo AI repository.
 
 ## 1. Project Overview & Architecture

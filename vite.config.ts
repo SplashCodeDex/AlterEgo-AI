@@ -20,7 +20,7 @@ export default defineConfig(({ mode }) => {
           '/api': {
             target: 'http://localhost:5001',
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, '/alterego-ai-mobile/us-central1')
+            rewrite: (path) => path.replace(/^\/api/, '/alterego-ai-mobile/us-central1/transformImageHTTP')
           }
         }
       }
