@@ -1,11 +1,12 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
-*/
+ */
 const functions = require("firebase-functions");
 const { GoogleGenAI, Modality } = require("@google/genai");
 const Jimp = require("jimp");
 const { GoogleAuth } = require("google-auth-library");
+const cors = require("cors");
 
 // Initialize Firebase Admin SDK
 const admin = require("firebase-admin");
@@ -136,4 +137,47 @@ exports.validatePurchase = functions.https.onCall(async (data, context) => {
     }
 
     throw new functions.https.HttpsError('invalid-argument', 'Unsupported platform for validation.');
+});
+
+// CORS configuration for HTTP endpoints
+const corsHandler = cors({
+  origin: true, // Allow all origins in development
+  credentials: true
+});
+
+/**
+ * HTTP endpoint for web client (matches firebase.json routing)
+ */
+exports.transformImageHTTP = functions.https.onRequest(async (req, res) => {
+  corsHandler(req, res, async () => {
+    if (req.method === 'OPTIONS') {
+      res.status(204).send('');
+      return;
+    }
+
+    if (req.method !== 'POST') {
+      res.status(405).json({ error: 'Method not allowed' });
+      return;
+    }
+
+    try {
+      const { imageDataUrl, prompt, caption } = req.body;
+
+      if (!imageDataUrl || !prompt) {
+        res.status(400).json({ error: 'Missing "imageDataUrl" or "prompt".' });
+        return;
+      }
+
+      // Call the existing callable function logic
+      const result = await exports.transformImage({ imageDataUrl, prompt, caption }, {});
+
+      res.json(result);
+    } catch (error) {
+      console.error('HTTP endpoint error:', error);
+      res.status(500).json({
+        error: 'Internal server error',
+        message: error.message
+      });
+    }
+  });
 });

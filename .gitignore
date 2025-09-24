@@ -33,9 +33,6 @@ mobile/android/app/src/main/res/drawable-*
 mobile/android/app/src/main/res/raw/
 mobile/android/keystores/
 mobile/android/local.properties
-mobile/android/app/debug.keystore
-mobile/android/app/proguard-rules.pro
-mobile/google-services.json.backup
 *.hprof
 
 # iOS
@@ -58,3 +55,5 @@ mobile/.metro-health-check*
 *.njsproj
 *.sln
 *.sw?
+mobile/android/app/debug.keystore
+mobile/google-services.json.backup
