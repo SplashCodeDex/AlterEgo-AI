@@ -85,6 +85,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        manifestPlaceholders = [usesCleartextTraffic: "false"]
     }
     signingConfigs {
         debug {
@@ -97,6 +98,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            manifestPlaceholders = [usesCleartextTraffic: "true"]
         }
         release {
             // Caution! In production, you need to generate your own keystore file.
@@ -117,4 +119,6 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+    implementation 'com.android.billingclient:billing:6.0.1'
+    implementation 'com.dooboolab.openiap:openiap-google:1.2.7'
 }

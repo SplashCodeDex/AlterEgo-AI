@@ -22,6 +22,7 @@
     "react-native-iap": "^14.4.3",
     "react-native-image-picker": "^8.2.1",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-nitro-modules": "^0.29.6",
     "react-native-svg": "^15.4.0",
     "react-native-view-shot": "^4.0.3"
   },
