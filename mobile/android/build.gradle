@@ -1,29 +1,20 @@
 buildscript {
     ext {
-        buildToolsVersion = "34.0.0"
-        minSdkVersion = 21
-        compileSdkVersion = 34
-        targetSdkVersion = 34
-        ndkVersion = "25.1.8937393"
-        kotlinVersion = "1.8.0"
+        buildToolsVersion = "35.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 35
+        targetSdkVersion = 35
+        ndkVersion = "27.1.12297006"
+        kotlinVersion = "2.0.21"
     }
     repositories {
         google()
         mavenCentral()
         maven { url "$rootDir/../node_modules/react-native/android" }
-        maven { url "file://$rootDir/../node_modules/@react-native/gradle-plugin" }
+        maven { url new File("$rootDir/../node_modules/@react-native/gradle-plugin").toURI().toURL() }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.1.1")
-        classpath("com.facebook.react:react-native-gradle-plugin:0.74.85")
-        classpath("com.google.gms:google-services:4.4.0")
-    }
-}
-
-allprojects {
-    repositories {
-        google()
-        mavenCentral()
-        maven { url 'https://www.jitpack.io' }
+        classpath("com.android.tools.build:gradle:8.13.0")
+        classpath("com.google.gms:google-services:4.4.3")
     }
 }
