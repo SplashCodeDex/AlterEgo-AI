@@ -21,15 +21,30 @@ const ProFeature = ({ children }: { children: React.ReactNode }) => (
 
 const GetCreditsModal: React.FC<GetCreditsModalProps> = ({ onClose, setCredits, setIsPro }) => {
     const [isWatchingAd, setIsWatchingAd] = useState(false);
+    const [purchasingState, setPurchasingState] = useState<'idle' | 'purchasing' | 'purchased'>('idle');
     
     const handleSubscribe = () => {
-        setIsPro(true);
-        onClose();
+        setPurchasingState('purchasing');
+        setTimeout(() => {
+            setIsPro(true);
+            setPurchasingState('purchased');
+            setTimeout(() => {
+                onClose();
+                setPurchasingState('idle');
+            }, 1500);
+        }, 2000);
     };
 
     const handleBuyCredits = (amount: number) => {
-        setCredits(prev => prev + amount);
-        onClose();
+        setPurchasingState('purchasing');
+        setTimeout(() => {
+            setCredits(prev => prev + amount);
+            setPurchasingState('purchased');
+            setTimeout(() => {
+                onClose();
+                setPurchasingState('idle');
+            }, 1500);
+        }, 2000);
     };
 
     const handleWatchAd = () => {
@@ -83,8 +98,8 @@ const GetCreditsModal: React.FC<GetCreditsModalProps> = ({ onClose, setCredits, 
                             <ProFeature><Zap size={16} className="inline mr-1" /> No Watermarks</ProFeature>
                             <ProFeature><Palette size={16} className="inline mr-1" /> Access to All Styles</ProFeature>
                         </ul>
-                        <button onClick={handleSubscribe} className="w-full bg-blue-600 font-bold py-3 px-6 rounded-lg hover:bg-blue-500 transition-colors text-lg shadow-lg shadow-blue-600/30">
-                           Subscribe Now
+                        <button onClick={handleSubscribe} disabled={purchasingState !== 'idle'} className="w-full bg-blue-600 font-bold py-3 px-6 rounded-lg hover:bg-blue-500 transition-colors text-lg shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed">
+                           {purchasingState === 'purchasing' ? 'Purchasing...' : purchasingState === 'purchased' ? 'Purchased!' : 'Subscribe Now'}
                         </button>
                     </div>
 
@@ -92,16 +107,16 @@ const GetCreditsModal: React.FC<GetCreditsModalProps> = ({ onClose, setCredits, 
                     <div>
                         <h3 className="text-xl font-bold text-center mb-4">Or Buy Credit Packs</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <button onClick={() => handleBuyCredits(30)} className="credit-pack-button">
+                            <button onClick={() => handleBuyCredits(30)} disabled={purchasingState !== 'idle'} className="credit-pack-button disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span className="text-2xl sm:text-3xl font-bold">30</span>
                                 <span className="text-neutral-400">Credits</span>
                             </button>
-                             <button onClick={() => handleBuyCredits(100)} className="credit-pack-button border-blue-500 ring-2 ring-blue-500">
+                             <button onClick={() => handleBuyCredits(100)} disabled={purchasingState !== 'idle'} className="credit-pack-button border-blue-500 ring-2 ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span className="absolute -top-3 bg-blue-600 text-xs font-bold px-2 py-0.5 rounded-full">BEST VALUE</span>
                                 <span className="text-2xl sm:text-3xl font-bold">100</span>
                                 <span className="text-neutral-400">Credits</span>
                             </button>
-                             <button onClick={() => handleBuyCredits(500)} className="credit-pack-button">
+                             <button onClick={() => handleBuyCredits(500)} disabled={purchasingState !== 'idle'} className="credit-pack-button disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span className="text-2xl sm:text-3xl font-bold">500</span>
                                 <span className="text-neutral-400">Credits</span>
                             </button>
@@ -111,7 +126,7 @@ const GetCreditsModal: React.FC<GetCreditsModalProps> = ({ onClose, setCredits, 
                     {/* Rewarded Ad */}
                     <div className="text-center">
                          <h3 className="text-xl font-bold text-center mb-4">Need a Few More?</h3>
-                        <button onClick={handleWatchAd} disabled={isWatchingAd} className="w-full sm:w-auto bg-green-600/20 border border-green-500/50 text-green-300 font-bold py-3 px-8 rounded-lg hover:bg-green-600/30 transition-colors flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-wait mx-auto">
+                        <button onClick={handleWatchAd} disabled={isWatchingAd || purchasingState !== 'idle'} className="w-full sm:w-auto bg-green-600/20 border border-green-500/50 text-green-300 font-bold py-3 px-8 rounded-lg hover:bg-green-600/30 transition-colors flex items-center justify-center gap-3 disabled:opacity-60 disabled:cursor-wait mx-auto">
                             <Clapperboard size={20} />
                             <span>{isWatchingAd ? 'Loading Ad...' : 'Watch Ad for 2 Credits'}</span>
                         </button>

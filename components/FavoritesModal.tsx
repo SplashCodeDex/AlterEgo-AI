@@ -2,7 +2,7 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
 */
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Download, Share2, Heart, GitCompareArrows } from 'lucide-react';
 
@@ -16,18 +16,39 @@ interface FavoritesModalProps {
     images: FavoritedImage[];
     onClose: () => void;
     onToggleFavorite: (url: string, caption: string, originalUrl: string) => void;
-    onDownload: (url: string, caption: string) => void;
-    onShare: (url: string, caption: string) => void;
+    onDownload: (url: string, caption: string) => Promise<void>;
+    onShare: (url: string, caption: string) => Promise<void>;
     onShareComparison: (originalUrl: string, generatedUrl: string, caption: string) => void;
 }
 
 const FavoriteItem: React.FC<{
     image: FavoritedImage;
     onToggleFavorite: (url: string, caption: string, originalUrl: string) => void;
-    onDownload: (url: string, caption: string) => void;
-    onShare: (url: string, caption: string) => void;
+    onDownload: (url: string, caption: string) => Promise<void>;
+    onShare: (url: string, caption: string) => Promise<void>;
     onShareComparison: (originalUrl: string, generatedUrl: string, caption: string) => void;
 }> = ({ image, onToggleFavorite, onDownload, onShare, onShareComparison }) => {
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [isSharing, setIsSharing] = useState(false);
+
+    const handleDownload = async () => {
+        setIsDownloading(true);
+        try {
+            await onDownload(image.url, image.caption);
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handleShare = async () => {
+        setIsSharing(true);
+        try {
+            await onShare(image.url, image.caption);
+        } finally {
+            setIsSharing(false);
+        }
+    };
+
     return (
         <motion.div 
             {...{
@@ -40,8 +61,23 @@ const FavoriteItem: React.FC<{
             className="relative group aspect-square rounded-lg overflow-hidden bg-neutral-800"
         >
             <img src={image.url} alt={image.caption} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-2">
-                <p className="text-white text-xs font-bold truncate">{image.caption}</p>
+            <AnimatePresence>
+                {(isDownloading || isSharing) && (
+                    <motion.div 
+                        {...{
+                            initial: { opacity: 0 },
+                            animate: { opacity: 1 },
+                            exit: { opacity: 0 },
+                        }}
+                        className="absolute inset-0 bg-black/60 flex items-center justify-center"
+                    >
+                        {isDownloading && <Download className="text-white animate-pulse" />}
+                        {isSharing && <Share2 className="text-white animate-pulse" />}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-2">
+                <p className="text-white text-xs font-bold truncate shadow-black [text-shadow:_0_1px_4px_var(--tw-shadow-color)]">{image.caption}</p>
                 <div className="flex justify-end items-center gap-1">
                      <button
                         onClick={() => onToggleFavorite(image.url, image.caption, image.originalUrl)}
@@ -58,15 +94,17 @@ const FavoriteItem: React.FC<{
                         <GitCompareArrows size={16} />
                     </button>
                     <button
-                        onClick={() => onDownload(image.url, image.caption)}
-                        className="p-1.5 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
+                        onClick={handleDownload}
+                        disabled={isDownloading}
+                        className="p-1.5 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors disabled:opacity-50"
                         title="Download"
                     >
                         <Download size={16} />
                     </button>
                     <button
-                        onClick={() => onShare(image.url, image.caption)}
-                        className="p-1.5 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors"
+                        onClick={handleShare}
+                        disabled={isSharing}
+                        className="p-1.5 bg-white/10 rounded-full text-white hover:bg-white/20 transition-colors disabled:opacity-50"
                         title="Share"
                     >
                         <Share2 size={16} />

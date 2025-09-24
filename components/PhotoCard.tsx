@@ -96,6 +96,7 @@ const TextScramble = ({ text }: { text: string }) => {
 
 const PhotoCard: React.FC<PhotoCardProps> = ({ imageUrl, originalImageUrl, caption, isSurprise = false, status, error, onRegenerate, onDownload, onShare, onShareComparison, canRegenerate = true, isFavorited = false, onToggleFavorite }) => {
     const [isImageLoaded, setIsImageLoaded] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
     const heartControls = useAnimation();
     
     useEffect(() => {
@@ -110,6 +111,17 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ imageUrl, originalImageUrl, capti
                 scale: [1, 1.3, 1],
                 transition: { duration: 0.3 }
             });
+        }
+    };
+
+    const handleDownloadClick = async () => {
+        if (onDownload) {
+            setIsDownloading(true);
+            try {
+                await onDownload();
+            } finally {
+                setIsDownloading(false);
+            }
         }
     };
 
@@ -139,6 +151,13 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ imageUrl, originalImageUrl, capti
                             isImageLoaded ? 'opacity-100' : 'opacity-0'
                         )}
                     />
+                )}
+                 {isDownloading && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <motion.div {...{animate:{rotate:360}, transition:{duration:1, repeat:Infinity, ease:'linear'}}} >
+                            <Download size={32} className="text-white" />
+                        </motion.div>
+                    </div>
                 )}
             </div>
             <div className="flex items-center justify-between p-4 border-t border-white/10">
@@ -182,7 +201,8 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ imageUrl, originalImageUrl, capti
                         )}
                         {onDownload && (
                             <button
-                                onClick={onDownload}
+                                onClick={handleDownloadClick}
+                                disabled={isDownloading}
                                 className={actionButtonClasses}
                                 aria-label={`Download image for ${caption}`}
                                 title="Download"

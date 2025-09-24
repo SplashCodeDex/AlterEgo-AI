@@ -15,6 +15,7 @@ interface HistoryModalProps {
 
 const HistoryModal: React.FC<HistoryModalProps> = ({ onClose, onRestoreSession }) => {
     const [history, setHistory] = useState<HistorySession[]>([]);
+    const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
     useEffect(() => {
         try {
@@ -28,10 +29,15 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ onClose, onRestoreSession }
     }, []);
 
     const handleClearHistory = () => {
-        sessionStorage.removeItem('alterEgoHistory');
-        setHistory([]);
+        setIsConfirmingClear(true);
     };
     
+    const handleConfirmClear = () => {
+        sessionStorage.removeItem('alterEgoHistory');
+        setHistory([]);
+        setIsConfirmingClear(false);
+    };
+
     const timeAgo = (timestamp: number) => {
         const seconds = Math.floor((new Date().getTime() - timestamp) / 1000);
         let interval = seconds / 31536000;
@@ -74,12 +80,36 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ onClose, onRestoreSession }
                     <h2 id="history-title" className="text-xl sm:text-2xl font-bold font-sora">Session History</h2>
                     <div className="flex items-center gap-4">
                         {history.length > 0 && (
-                            <button 
-                                onClick={handleClearHistory} 
-                                className="flex items-center gap-2 text-sm text-neutral-400 hover:text-red-400 transition-colors"
-                            >
-                                <Trash2 size={16} /> Clear
-                            </button>
+                             <AnimatePresence mode="wait">
+                                {isConfirmingClear ? (
+                                    <motion.div
+                                        key="confirm"
+                                        {...{
+                                            initial: { opacity: 0, x: 10 },
+                                            animate: { opacity: 1, x: 0 },
+                                            exit: { opacity: 0, x: 10 },
+                                        }}
+                                        className="flex items-center gap-3 text-sm"
+                                    >
+                                        <span className="text-neutral-400">Are you sure?</span>
+                                        <button onClick={handleConfirmClear} className="font-bold text-red-400 hover:text-red-300 transition-colors">Yes</button>
+                                        <button onClick={() => setIsConfirmingClear(false)} className="font-bold text-neutral-300 hover:text-white transition-colors">No</button>
+                                    </motion.div>
+                                ) : (
+                                    <motion.button
+                                        key="clear"
+                                        {...{
+                                            initial: { opacity: 0, x: -10 },
+                                            animate: { opacity: 1, x: 0 },
+                                            exit: { opacity: 0, x: -10 },
+                                        }}
+                                        onClick={handleClearHistory} 
+                                        className="flex items-center gap-2 text-sm text-neutral-400 hover:text-red-400 transition-colors"
+                                    >
+                                        <Trash2 size={16} /> Clear All
+                                    </motion.button>
+                                )}
+                            </AnimatePresence>
                         )}
                         <button onClick={onClose} className="p-1 rounded-full text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors" aria-label="Close modal">
                             <X size={24} />
@@ -110,6 +140,11 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ onClose, onRestoreSession }
                                             <div className="flex-grow">
                                                 <p className="font-bold text-neutral-200">Generation Session</p>
                                                 <p className="text-sm text-neutral-400">{timeAgo(session.timestamp)}</p>
+                                                <div className="flex items-center gap-1.5 mt-1">
+                                                    {Object.values(session.generatedImages).slice(0, 5).map((image, i) => (
+                                                        <img key={i} src={image.url} className="w-5 h-5 rounded-full object-cover" />
+                                                    ))}
+                                                </div>
                                             </div>
                                         </button>
                                     </motion.li>
