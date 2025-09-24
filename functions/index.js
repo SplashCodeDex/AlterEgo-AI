@@ -13,7 +13,12 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 // Initialize the Google GenAI client with the API key stored in Firebase config
-const ai = new GoogleGenAI({apiKey: functions.config().gemini.key});
+// Fallback to process.env for local development
+const geminiApiKey = functions.config().gemini?.key || process.env.GEMINI_API_KEY;
+if (!geminiApiKey) {
+    console.error("Gemini API key is not configured. Please set gemini.key in Firebase config or GEMINI_API_KEY in environment variables.");
+}
+const ai = new GoogleGenAI({apiKey: geminiApiKey});
 
 /**
  * Applies a watermark to an image buffer.
