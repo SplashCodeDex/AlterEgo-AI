@@ -8,7 +8,7 @@ AlterEgo-AI is an AI-powered photo transformation application with both web and 
 
 ### Current Stack
 - **Web Frontend**: React 19 + Vite + TypeScript
-- **Mobile App**: React Native 0.74.3 (iOS/Android)
+- **Mobile App**: React Native 0.81.4 (iOS/Android)
 - **AI Service**: Google Gemini 2.5 Flash API
 - **Image Processing**: Client-side with watermarking
 - **State Management**: React Context (web) + AsyncStorage (mobile)
@@ -134,6 +134,24 @@ Firebase is the optimal choice for AlterEgo-AI because it provides:
 3. **Generate AAB**: Use `./gradlew bundleRelease`
 4. **Internal Testing**: Upload to Google Play Console for testing
 5. **Production Release**: Roll out to production track
+
+#### React Native 0.81+ Android Setup Requirements
+
+For React Native 0.81.4, the project uses the modern React Native Gradle plugin configuration:
+
+**Key Configuration Files:**
+- **`android/settings.gradle`**: Uses `includeBuild("../node_modules/@react-native/gradle-plugin")` for modern plugin management
+- **`android/app/build.gradle`**: Uses `plugins {}` block with `id("com.facebook.react")` instead of legacy `apply plugin` syntax
+- **`android/build.gradle`**: Removed legacy classpath dependencies - now managed by the plugin
+- **`android/gradle.properties`**: Configured for React Native 0.81+ with increased memory allocation and required build features
+
+**Setup Verification:**
+```bash
+cd mobile/android
+./gradlew assembleDebug --dry-run  # Should complete successfully
+```
+
+This modern setup provides better build performance, more reliable dependency management, and improved compatibility with newer Android Gradle Plugin versions.
 
 ### Phase 3: Backend Services & API Integration
 
