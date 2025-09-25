@@ -4,7 +4,7 @@
 */
 import React from 'react';
 import { View, Text, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { Download, RefreshCw, AlertTriangle, Share2, Heart, GitCompareArrows } from 'lucide-react-native';
+import { Download, RefreshCw, AlertTriangle, Share2, Heart } from 'lucide-react-native';
 import AnimatedButton from './AnimatedButton';
 import TextScramble from './TextScramble';
 
@@ -20,7 +20,6 @@ interface PhotoCardProps {
     onRegenerate?: () => void;
     onDownload?: () => void;
     onShare?: () => void;
-    onShareComparison?: (originalUrl: string, generatedUrl: string, caption: string) => void;
     canRegenerate?: boolean;
     isFavorited?: boolean;
     onToggleFavorite?: (url: string, caption: string, originalUrl: string) => void;
@@ -33,7 +32,7 @@ const ShimmerLoader = () => (
     </View>
 );
 
-const ErrorDisplay = ({ onRegenerate, canRegenerate }: { onRegenerate?: () => void, canRegenerate?: boolean }) => (
+const ErrorDisplay = ({ onRegenerate }: { onRegenerate?: () => void }) => (
     <View style={styles.centered}>
         <AlertTriangle size={48} stroke="#F87171" />
         <Text style={styles.errorTitle}>Generation Failed</Text>
@@ -41,8 +40,7 @@ const ErrorDisplay = ({ onRegenerate, canRegenerate }: { onRegenerate?: () => vo
         {onRegenerate && (
             <AnimatedButton 
                 onPress={onRegenerate} 
-                disabled={!canRegenerate}
-                style={[styles.regenerateButton, !canRegenerate && styles.disabledButton]}
+                style={styles.regenerateButton}
             >
                 <RefreshCw size={14} stroke="#FCA5A5" /> 
                 <Text style={styles.regenerateText}>Try Again</Text>
@@ -51,17 +49,11 @@ const ErrorDisplay = ({ onRegenerate, canRegenerate }: { onRegenerate?: () => vo
     </View>
 );
 
-const PhotoCard: React.FC<PhotoCardProps> = ({ imageUrl, originalImageUrl, caption, isSurprise = false, status, onRegenerate, onDownload, onShare, onShareComparison, canRegenerate = true, isFavorited = false, onToggleFavorite }) => {
+const PhotoCard: React.FC<PhotoCardProps> = ({ imageUrl, originalImageUrl, caption, isSurprise = false, status, onRegenerate, onDownload, onShare, canRegenerate = true, isFavorited = false, onToggleFavorite }) => {
     
     const handleFavoriteClick = () => {
         if (onToggleFavorite && imageUrl && originalImageUrl) {
             onToggleFavorite(imageUrl, caption, originalImageUrl);
-        }
-    };
-
-    const handleShareComparisonClick = () => {
-        if (onShareComparison && originalImageUrl && imageUrl) {
-            onShareComparison(originalImageUrl, imageUrl, caption);
         }
     };
 
@@ -85,9 +77,6 @@ const PhotoCard: React.FC<PhotoCardProps> = ({ imageUrl, originalImageUrl, capti
                     <View style={styles.actions}>
                         <AnimatedButton onPress={handleFavoriteClick} style={styles.actionButton}>
                             <Heart size={18} stroke={isFavorited ? "#EF4444" : "#A1A1AA"} fill={isFavorited ? "#EF4444" : "none"} />
-                        </AnimatedButton>
-                        <AnimatedButton onPress={handleShareComparisonClick} style={styles.actionButton}>
-                            <GitCompareArrows size={18} stroke="#A1A1AA" />
                         </AnimatedButton>
                         <AnimatedButton onPress={onRegenerate} style={styles.actionButton} disabled={!canRegenerate}>
                             <RefreshCw size={18} stroke={canRegenerate ? "#A1A1AA" : "#52525B"} />

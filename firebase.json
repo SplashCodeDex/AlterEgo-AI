@@ -14,7 +14,7 @@
     "rewrites": [
       {
         "source": "/api/**",
-        "function": "transformImage"
+        "function": "transformImageHTTP"
       },
       {
         "source": "**",

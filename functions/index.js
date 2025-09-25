@@ -44,21 +44,20 @@ async function applyWatermark(imageBuffer) {
 
 
 /**
- * A secure, callable Cloud Function to transform an image using the Gemini API and apply a watermark.
+ * The core logic for transforming an image using the Gemini API and applying a watermark.
+ * This is a regular async function, not a Cloud Function trigger.
+ * @param {string} imageDataUrl The base64 data URL of the image to transform.
+ * @param {string} prompt The text prompt to guide the transformation.
+ * @return {Promise<{success: boolean, imageDataUrl: string}>} A promise that resolves with the result.
  */
-exports.transformImage = functions.runWith({
-    timeoutSeconds: 120,
-    memory: '1GB'
-  }).https.onCall(async (data, context) => {
-    const { imageDataUrl, prompt } = data;
-
+async function _transformImageLogic(imageDataUrl, prompt) {
     if (!imageDataUrl || !prompt) {
-        throw new functions.https.HttpsError('invalid-argument', 'Missing "imageDataUrl" or "prompt".');
+        throw new Error('Missing "imageDataUrl" or "prompt".');
     }
 
     const match = imageDataUrl.match(/^data:(image\/\w+);base64,(.*)$/);
     if (!match) {
-        throw new functions.https.HttpsError('invalid-argument', 'Invalid imageDataUrl format.');
+        throw new Error('Invalid imageDataUrl format.');
     }
 
     const [, mimeType, base64Data] = match;
@@ -68,8 +67,8 @@ exports.transformImage = functions.runWith({
         const textPart = { text: prompt };
 
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image-preview',
-            contents: { parts: [imagePart, textPart] },
+            model: 'gemini-1.5-flash',
+            contents: { parts: [imagePart, {text: prompt}] },
             config: { responseModalities: [Modality.IMAGE, Modality.TEXT] },
         });
         
@@ -77,7 +76,7 @@ exports.transformImage = functions.runWith({
 
         if (!imagePartFromResponse?.inlineData) {
             console.error("No image part in Gemini response:", JSON.stringify(response));
-            throw new functions.https.HttpsError('internal', 'The AI model did not return an image. The prompt may have been blocked.');
+             throw new Error('The AI model did not return an image. The prompt may have been blocked.');
         }
         
         const resultBase64Data = imagePartFromResponse.inlineData.data;
@@ -93,7 +92,26 @@ exports.transformImage = functions.runWith({
 
     } catch (error) {
         console.error("Error calling Gemini API:", error);
-        throw new functions.https.HttpsError('internal', 'An error occurred while generating the image.', error.message);
+        // Re-throw the error to be caught by the calling Cloud Function
+        throw error;
+    }
+}
+
+
+/**
+ * A secure, callable Cloud Function to transform an image.
+ * This is for the mobile client.
+ */
+exports.transformImage = functions.runWith({
+    timeoutSeconds: 120,
+    memory: '1GB'
+  }).https.onCall(async (data, context) => {
+    try {
+        return await _transformImageLogic(data.imageDataUrl, data.prompt);
+    } catch (error) {
+        // Log the error and throw a specific HttpsError for the client
+        console.error("Error in transformImage (onCall):", error);
+        throw new functions.https.HttpsError('internal', error.message, error.details);
     }
 });
 
@@ -151,38 +169,30 @@ const corsHandler = cors({
 });
 
 /**
- * HTTP endpoint for web client (matches firebase.json routing)
+ * HTTP endpoint for the web client.
  */
-exports.transformImageHTTP = functions.https.onRequest(async (req, res) => {
-  corsHandler(req, res, async () => {
-    if (req.method === 'OPTIONS') {
-      res.status(204).send('');
-      return;
-    }
+exports.transformImageHTTP = functions.https.onRequest((req, res) => {
+    // Handle CORS preflight requests
+    corsHandler(req, res, async () => {
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: 'Method Not Allowed' });
+        }
 
-    if (req.method !== 'POST') {
-      res.status(405).json({ error: 'Method not allowed' });
-      return;
-    }
+        try {
+            const { imageDataUrl, prompt } = req.body;
 
-    try {
-      const { imageDataUrl, prompt, caption } = req.body;
+            // Use the shared logic
+            const result = await _transformImageLogic(imageDataUrl, prompt);
 
-      if (!imageDataUrl || !prompt) {
-        res.status(400).json({ error: 'Missing "imageDataUrl" or "prompt".' });
-        return;
-      }
+            return res.status(200).json(result);
 
-      // Call the existing callable function logic
-      const result = await exports.transformImage({ imageDataUrl, prompt, caption }, {});
-
-      res.json(result);
-    } catch (error) {
-      console.error('HTTP endpoint error:', error);
-      res.status(500).json({
-        error: 'Internal server error',
-        message: error.message
-      });
-    }
-  });
+        } catch (error) {
+            console.error('Error in transformImageHTTP (onRequest):', error);
+            // Check if the error is a known type to provide a more specific status code
+            if (error.message.includes('Missing') || error.message.includes('Invalid')) {
+                return res.status(400).json({ error: error.message });
+            }
+            return res.status(500).json({ error: 'An internal error occurred.' });
+        }
+    });
 });

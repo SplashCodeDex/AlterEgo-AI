@@ -16,6 +16,12 @@ export default [
         },
         project: './tsconfig.json',
       },
+      globals: {
+        console: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        JSX: 'readonly',
+      },
     },
     plugins: {
       '@typescript-eslint': typescript,

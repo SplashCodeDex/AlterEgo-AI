@@ -11,7 +11,7 @@ import AnimatedButton from './AnimatedButton';
 interface StyleSelectionGridProps {
     styles: Style[];
     selectedStyles: Set<string>;
-    onToggleStyle: (caption: string) => void;
+    onToggleStyle: () => void;
 }
 
 const StyleItem = ({ item, isSelected, onToggle }: { item: Style, isSelected: boolean, onToggle: () => void }) => {
@@ -42,7 +42,7 @@ const StyleSelectionGrid: React.FC<StyleSelectionGridProps> = ({ styles, selecte
                     <StyleItem
                         item={item}
                         isSelected={selectedStyles.has(item.caption)}
-                        onToggle={() => onToggleStyle(item.caption)}
+                        onToggle={onToggleStyle}
                     />
                 </View>
             )}

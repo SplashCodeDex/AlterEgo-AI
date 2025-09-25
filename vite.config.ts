@@ -6,10 +6,6 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
-      },
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
@@ -18,9 +14,9 @@ export default defineConfig(({ mode }) => {
       server: {
         proxy: {
           '/api': {
-            target: 'http://localhost:5001',
+            target: 'http://127.0.0.1:5001/alterego-ai-mobile/us-central1',
             changeOrigin: true,
-            rewrite: (path) => path.replace(/^\/api/, '/alterego-ai-mobile/us-central1/transformImageHTTP')
+            rewrite: (path) => path.replace(/^\/api/, '/transformImageHTTP'),
           }
         }
       }

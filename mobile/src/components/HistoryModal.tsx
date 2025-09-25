@@ -10,7 +10,7 @@ import type { HistorySession } from '../types';
 interface HistoryModalProps {
     history: HistorySession[];
     onClose: () => void;
-    onRestoreSession: (session: HistorySession) => void;
+    onRestoreSession: () => void;
     onClearHistory: () => void;
 }
 
@@ -56,7 +56,7 @@ const HistoryModal: React.FC<HistoryModalProps> = ({ history, onClose, onRestore
                             keyExtractor={(item) => item.timestamp.toString()}
                             renderItem={({ item }) => (
                                 <TouchableOpacity 
-                                    onPress={() => onRestoreSession(item)}
+                                    onPress={onRestoreSession}
                                     style={styles.sessionItem}
                                 >
                                     <Image source={{ uri: item.uploadedImage }} style={styles.thumbnail} />

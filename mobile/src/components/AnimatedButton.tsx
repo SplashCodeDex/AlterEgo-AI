@@ -5,12 +5,7 @@
 import React, { useRef } from 'react';
 import { TouchableOpacity, Animated, TouchableOpacityProps } from 'react-native';
 
-interface AnimatedButtonProps extends TouchableOpacityProps {
-    // FIX: Removed redundant `children` property. `TouchableOpacityProps` already defines it,
-    // and redefining it was causing type inference issues for other props like `style` and `onPress`.
-}
-
-const AnimatedButton: React.FC<AnimatedButtonProps> = ({ children, style, ...props }) => {
+const AnimatedButton: React.FC<TouchableOpacityProps> = ({ children, style, ...props }) => {
     const scaleValue = useRef(new Animated.Value(1)).current;
 
     const onPressIn = () => {

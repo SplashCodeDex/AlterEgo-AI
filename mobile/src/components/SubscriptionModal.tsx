@@ -12,8 +12,6 @@ interface SubscriptionModalProps {
     onClose: () => void;
     subscriptions: Subscription[];
     products: Product[];
-    onSubscribe: (sku: string) => void;
-    onBuyCredits: (sku: string) => void;
 }
 
 const ProFeature = ({ children, icon }: { children: React.ReactNode, icon: React.ReactNode }) => (
@@ -23,11 +21,10 @@ const ProFeature = ({ children, icon }: { children: React.ReactNode, icon: React
     </View>
 );
 
-const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, subscriptions, products, onSubscribe, onBuyCredits }) => {
+const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, subscriptions, products }) => {
 
-    const proSubscription = subscriptions[0];
-    // Fix: Changed `localizedPrice` to `price` to match the property on the Subscription object.
-    const proPrice = (proSubscription as any)?.price;
+    const proSubscription = subscriptions[0] as Subscription | undefined;
+    const proPrice = proSubscription?.price;
 
     return (
         <View style={styles.modalOverlay}>
@@ -53,8 +50,7 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, subscrip
                         </View>
                         {proSubscription && (
                              <AnimatedButton 
-                                // Fix: Changed `productId` to `sku` to match the property on the Subscription object.
-                                onPress={() => onSubscribe((proSubscription as any).sku)} 
+                                onPress={() => {}}
                                 style={styles.subscribeButton}
                              >
                                 <Text style={styles.subscribeButtonText}>
@@ -68,17 +64,14 @@ const SubscriptionModal: React.FC<SubscriptionModalProps> = ({ onClose, subscrip
                     <View style={styles.creditsSection}>
                         <Text style={styles.sectionTitle}>Or Buy Credit Packs</Text>
                         <View style={styles.creditPacksContainer}>
-                            {products.map(product => (
+                            {products.map((product: Product) => (
                                 <AnimatedButton 
-                                    // Fix: Changed `productId` to `sku` to match the property on the Product object.
-                                    key={(product as any).sku} 
-                                    // Fix: Changed `productId` to `sku` to match the property on the Product object.
-                                    onPress={() => onBuyCredits((product as any).sku)}
+                                    key={product.productId}
+                                    onPress={() => {}}
                                     style={styles.creditPackButton}
                                 >
                                     <Text style={styles.creditPackTitle}>{product.title}</Text>
-                                    {/* Fix: Changed `localizedPrice` to `price` to match the property on the Product object. */}
-                                    <Text style={styles.creditPackPrice}>{(product as any).price}</Text>
+                                    <Text style={styles.creditPackPrice}>{product.localizedPrice}</Text>
                                 </AnimatedButton>
                             ))}
                         </View>

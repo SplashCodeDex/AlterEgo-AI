@@ -18,7 +18,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ credits, isPro, onGetCredits, onShowFavorites, onShowHistory }) => {
     
     const handleMoreAppsClick = () => {
-        Linking.openURL('https://aistudio.google.com/apps').catch(err => console.error("Couldn't load page", err));
+        Linking.openURL('https://aistudio.google.com/apps');
     };
 
     return (

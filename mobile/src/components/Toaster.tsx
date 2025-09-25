@@ -8,13 +8,6 @@ import { CheckCircle, AlertCircle, X } from 'lucide-react-native';
 
 type ToastType = 'success' | 'error';
 
-interface ToastMessage {
-    id: number;
-    message: string;
-    type: ToastType;
-    icon?: ReactNode;
-}
-
 interface ToastContextType {
     addToast: (message: string, type?: ToastType, icon?: ReactNode) => void;
 }
@@ -29,26 +22,24 @@ export const useToasts = () => {
     return context;
 };
 
-interface ToasterProps {
-    toasts: ToastMessage[];
+const Toaster: React.FC<{
+    toasts: { id: number; message: string; type: ToastType; icon?: ReactNode }[];
     removeToast: (id: number) => void;
-}
-
-const Toaster: React.FC<ToasterProps> = ({ toasts, removeToast }) => {
+}> = ({ toasts, removeToast }) => {
     return (
         <View style={styles.toasterContainer}>
-            {toasts.map(toast => (
-                <View key={toast.id} style={styles.toast}>
+            {toasts.map(({ id, message, type, icon }) => (
+                <View key={id} style={styles.toast}>
                     <View style={styles.toastContent}>
-                        {toast.icon ? toast.icon : (
-                            toast.type === 'success' ? (
+                        {icon ? icon : (
+                            type === 'success' ? (
                                 <CheckCircle color="#34D399" style={styles.icon} />
                             ) : (
                                 <AlertCircle color="#F87171" style={styles.icon} />
                             )
                         )}
-                        <Text style={styles.message}>{toast.message}</Text>
-                        <TouchableOpacity onPress={() => removeToast(toast.id)} style={styles.closeButton}>
+                        <Text style={styles.message}>{message}</Text>
+                        <TouchableOpacity onPress={() => removeToast(id)} style={styles.closeButton}>
                             <X size={18} color="#A1A1AA" />
                         </TouchableOpacity>
                     </View>
@@ -59,7 +50,7 @@ const Toaster: React.FC<ToasterProps> = ({ toasts, removeToast }) => {
 };
 
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [toasts, setToasts] = useState<ToastMessage[]>([]);
+    const [toasts, setToasts] = useState<{ id: number; message: string; type: ToastType; icon?: ReactNode }[]>([]);
 
     const addToast = useCallback((message: string, type: ToastType = 'success', icon?: ReactNode) => {
         const id = Date.now();

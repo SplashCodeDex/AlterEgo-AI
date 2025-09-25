@@ -1,0 +1,5 @@
+platform :ios, '15.1'
+
+target 'ReactNativeProject' do
+  use_native_modules!
+end

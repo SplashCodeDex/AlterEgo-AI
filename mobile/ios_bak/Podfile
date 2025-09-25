@@ -1,0 +1,19 @@
+# Podfile for AlterEgoNative
+
+platform :ios, '12.0'
+
+target 'AlterEgoNative' do
+  # Pods for AlterEgoNative
+  pod 'RNCAsyncStorage', :path => '../node_modules/@react-native-async-storage/async-storage'
+  pod 'react-native-cameraroll', :path => '../node_modules/@react-native-camera-roll/camera-roll'
+  pod 'RNFBApp', :path => '../node_modules/@react-native-firebase/app'
+  pod 'RNFBFunctions', :path => '../node_modules/@react-native-firebase/functions'
+  pod 'RNBootSplash', :path => '../node_modules/react-native-bootsplash'
+  pod 'NitroIap', :path => '../node_modules/react-native-iap'
+  pod 'react-native-image-picker', :path => '../node_modules/react-native-image-picker'
+  pod 'BVLinearGradient', :path => '../node_modules/react-native-linear-gradient'
+  pod 'NitroModules', :path => '../node_modules/react-native-nitro-modules'
+  pod 'RNSVG', :path => '../node_modules/react-native-svg'
+  pod 'react-native-view-shot', :path => '../node_modules/react-native-view-shot'
+
+end

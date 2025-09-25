@@ -4,16 +4,13 @@
 */
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image } from 'react-native';
-import { X, Heart, Download, Share2 } from 'lucide-react-native';
+import { X, Heart } from 'lucide-react-native';
 import type { FavoritedImage } from '../types';
 
 interface FavoritesModalProps {
     images: FavoritedImage[];
     onClose: () => void;
     onToggleFavorite: (url: string, caption: string, originalUrl: string) => void;
-    onDownload: (url: string, caption: string) => void;
-    onShare: (url: string, caption: string) => void;
-    onShareComparison: (originalUrl: string, generatedUrl: string, caption: string) => void;
 }
 
 
@@ -32,7 +29,7 @@ const FavoriteItem: React.FC<{ image: FavoritedImage; onToggleFavorite: () => vo
 };
 
 
-const FavoritesModal: React.FC<FavoritesModalProps> = ({ images, onClose, onToggleFavorite, onDownload, onShare, onShareComparison }) => {
+const FavoritesModal: React.FC<FavoritesModalProps> = ({ images, onClose, onToggleFavorite }) => {
     return (
          <View style={styles.modalOverlay}>
             <View style={styles.modalContainer}>

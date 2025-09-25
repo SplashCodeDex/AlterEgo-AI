@@ -86,9 +86,10 @@ const initialState: AppState = {
 
 const appReducer = (state: AppState, action: AppAction): AppState => {
     switch (action.type) {
-        case 'HYDRATE_STATE':
+        case 'HYDRATE_STATE': {
             const history = action.payload.history || [];
             return { ...state, ...action.payload, hydrated: true, latestHistorySession: history.length > 0 ? history[0] : null };
+        }
         case 'SET_APP_STATE':
             return { ...state, appState: action.payload };
         case 'SET_UPLOADED_IMAGE':
