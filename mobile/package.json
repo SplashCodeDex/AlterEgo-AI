@@ -27,6 +27,7 @@
     "react-native-view-shot": "^4.0.3"
   },
   "devDependencies": {
+    "@react-native-community/cli": "latest",
     "@eslint/js": "^9.36.0",
     "@react-native/metro-config": "0.81.1",
     "@react-native/typescript-config": "0.81.1",
