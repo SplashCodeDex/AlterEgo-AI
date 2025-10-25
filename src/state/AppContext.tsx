@@ -8,7 +8,7 @@ import { useLocalStorageState, useFavorites, useHistory } from '../../lib/hooks'
 import type { GeneratedImage, HistorySession } from '../../types';
 import { generateStyledImage } from '../../services/geminiService';
 import { createAlbumPage, createComparisonImage } from '../../lib/albumUtils';
-import JSZip from 'jszip';
+import { downloadZip } from 'client-zip';
 import { ALL_STYLES, DEFAULT_STYLES, SURPRISE_STYLES, Style } from '../constants';
 import { PartyPopper } from 'lucide-react';
 
@@ -363,13 +363,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const handleDownloadZip = async () => {
         setState({ isZipping: true });
         try {
-            const zip = new JSZip();
-            Object.values(state.generatedImages).filter(img => img.status === 'done').forEach(img => {
-                zip.file(`alterego-${img.caption.toLowerCase().replace(/\s/g, '-')}.png`, img.url!.split(',')[1], { base64: true });
-            });
-            const content = await zip.generateAsync({ type: 'blob' });
+            const imagesToZip = await Promise.all(
+                Object.values(state.generatedImages)
+                    .filter(img => img.status === 'done' && img.url)
+                    .map(async img => {
+                        const response = await fetch(img.url!);
+                        const blob = await response.blob();
+                        return { name: `alterego-${img.caption.toLowerCase().replace(/\s/g, '-')}.png`, input: blob };
+                    })
+            );
+
+            if (imagesToZip.length === 0) return;
+
+            const zipBlob = await downloadZip(imagesToZip).blob();
             const link = document.createElement('a');
-            link.href = URL.createObjectURL(content);
+            link.href = URL.createObjectURL(zipBlob);
             link.download = 'alterego-images.zip';
             document.body.appendChild(link);
             link.click();
