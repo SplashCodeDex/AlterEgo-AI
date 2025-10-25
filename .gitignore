@@ -57,3 +57,4 @@ mobile/.metro-health-check*
 *.sw?
 mobile/android/app/debug.keystore
 mobile/google-services.json.backup
+mobile/android/app/
