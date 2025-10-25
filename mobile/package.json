@@ -31,6 +31,7 @@
     "@eslint/js": "^9.36.0",
     "@react-native/metro-config": "0.81.1",
     "@react-native/typescript-config": "0.81.1",
+    "@react-native/gradle-plugin": "0.81.4",
     "@types/react": "^19.1.13",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",
