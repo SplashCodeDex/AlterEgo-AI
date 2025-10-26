@@ -21,6 +21,7 @@ export async function generateStyledImage(imageDataUrl: string, prompt: string, 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-API-Key': import.meta.env.VITE_API_KEY,
       },
       body: JSON.stringify({
         imageDataUrl,

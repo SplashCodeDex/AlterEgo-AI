@@ -98,6 +98,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            buildConfigField "String", "PLAY_STORE_LICENSE_KEY", '""' // Placeholder for license key
             manifestPlaceholders = [usesCleartextTraffic: "true"]
         }
         release {

@@ -41,14 +41,23 @@ export const useIAP = (onPurchaseVerified: (sku: string) => void) => {
   useEffect(() => {
     const initializeIAP = async () => {
       try {
-        const connected = await RNIap.initConnection();
-        console.log('IAP connected:', connected);
+        // --- DEVELOPMENT WORKAROUND ---
+        // The following line is commented out because it will cause a crash on Android
+        // if you have not paid the Google Play Console fee and configured your license key.
+        //
+        // TO RE-ENABLE IAP:
+        // 1. Get your license key from the Google Play Console (Monetize > Monetization setup).
+        // 2. Add it to your `mobile/android/gradle.properties` file.
+        // 3. Uncomment the line below.
+        // const connected = await RNIap.initConnection();
+
+        console.log('IAP connection temporarily disabled for development. App will not crash.');
+        // console.log('IAP connected:', connected);
         await loadProducts();
         await checkCurrentPurchase();
       } catch (error) {
         console.warn('IAP Initialization Error:', error);
-      }
-    };
+      }    };
 
     initializeIAP();
 

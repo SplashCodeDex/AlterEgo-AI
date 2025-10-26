@@ -104,8 +104,18 @@ async function _transformImageLogic(imageDataUrl, prompt) {
  */
 exports.transformImage = functions.runWith({
     timeoutSeconds: 120,
-    memory: '1GB'
+    memory: '1GB',
+    enforceAppCheck: true, // Enforce App Check
   }).https.onCall(async (data, context) => {
+    // App Check validation is handled automatically by the 'enforceAppCheck' option.
+    // The authentication check below is now redundant if you only want to allow authenticated users *from your app*.
+    // If you want to allow *any* authenticated Firebase user (not just from your app), you can keep it.
+    // For this use case (protecting a public API), we will remove it and rely on App Check.
+    /*
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
+    }
+    */
     try {
         return await _transformImageLogic(data.imageDataUrl, data.prompt);
     } catch (error) {
@@ -119,7 +129,10 @@ exports.transformImage = functions.runWith({
 /**
  * Validates an in-app purchase receipt with Google/Apple servers.
  */
-exports.validatePurchase = functions.https.onCall(async (data, context) => {
+exports.validatePurchase = functions.runWith({ enforceAppCheck: true }).https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
+    }
     const { receipt, token, productId, platform } = data;
 
     if (platform === 'android') {
@@ -176,6 +189,14 @@ exports.transformImageHTTP = functions.https.onRequest((req, res) => {
     corsHandler(req, res, async () => {
         if (req.method !== 'POST') {
             return res.status(405).json({ error: 'Method Not Allowed' });
+        }
+
+        const clientApiKey = req.headers['x-api-key'];
+        const storedApiKey = functions.config().api.key;
+
+        if (!clientApiKey || clientApiKey !== storedApiKey) {
+            console.warn('Unauthorized access attempt: Invalid or missing API key.');
+            return res.status(403).send('Unauthorized');
         }
 
         try {

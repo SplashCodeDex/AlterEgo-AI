@@ -1,0 +1,17 @@
+{
+  "name": "AlterEgo-AI",
+  "displayName": "AlterEgo-AI",
+  "version": "0.0.0",
+  "android": {
+    "package": "com.alterego.native",
+    "versionCode": 1
+  },
+  "ios": {
+    "bundleIdentifier": "com.alterego.native",
+    "buildNumber": "1"
+  },
+  "assets": [
+    "./assets/fonts/",
+    "./assets/images/"
+  ]
+}

@@ -77,7 +77,7 @@ const initialState: AppState = {
     currentStyles: DEFAULT_STYLES,
     selectedStyles: new Set(DEFAULT_STYLES.map(s => s.caption)),
     shareableView: null,
-    credits: 18,
+    credits: 122,
     isPro: false,
     favoritedImages: {},
     history: [],
@@ -200,7 +200,7 @@ const createActions = (
         }
 
         if (!state.isPro) dispatch({ type: 'SET_CREDITS', payload: state.credits - generationCost });
-        
+
         dispatch({ type: 'SET_IS_RESTORED_SESSION', payload: false });
         dispatch({ type: 'SET_APP_STATE', payload: 'generating' });
 
