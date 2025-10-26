@@ -23,7 +23,7 @@ const primaryButtonStyles = StyleSheet.create({
         backgroundColor: '#2563EB',
         paddingVertical: 12,
         paddingHorizontal: 32,
-        borderRadius: 9999,
+        borderRadius: 999,
         flexDirection: 'row',
         alignItems: 'center',
         gap: 8,
@@ -337,9 +337,11 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 16,
-        paddingTop: 80,
-        paddingBottom: 40,
+        paddingHorizontal: 16,
+        paddingVertical: 24,
+        maxWidth: 500, // Limit content width for better readability on large screens
+        width: '100%',
+        alignSelf: 'center', // Center the main content block itself
     },
     idleContainer: {
         alignItems: 'center',
@@ -385,7 +387,10 @@ const styles = StyleSheet.create({
     infoCardsContainer: {
         marginTop: 48,
         width: '100%',
-        gap: 24,
+        gap: 16, // Adjusted gap for better spacing with wrapping
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
     },
     infoCard: {
         backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -394,6 +399,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 1,
         borderColor: 'rgba(255, 255, 255, 0.1)',
+        flex: 1, // Allow card to take available space
+        minWidth: 150, // Ensure cards don't get too small
+        marginHorizontal: 8, // Add horizontal margin to create space between cards when wrapping
     },
     infoCardTitle: {
         fontFamily: 'Inter-Bold',
@@ -413,6 +421,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 16,
         flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        width: '100%',
     },
     footerText: {
         position: 'absolute',
@@ -485,10 +496,13 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
     },
     resultsActions: {
-        flexDirection: 'column',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 16,
         marginTop: 16,
+        width: '100%',
     },
     hiddenViewShot: {
         position: 'absolute',

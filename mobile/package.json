@@ -13,6 +13,7 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-camera-roll/camera-roll": "^7.8.1",
+    "@react-native-community/blur": "^4.4.1",
     "@react-native-firebase/app": "^23.3.1",
     "@react-native-firebase/app-check": "^23.4.1",
     "@react-native-firebase/functions": "^23.3.1",
@@ -25,6 +26,7 @@
     "react-native-linear-gradient": "^2.8.3",
     "react-native-nitro-modules": "^0.31.2",
     "react-native-permissions": "^5.4.2",
+    "react-native-status-bar-height": "^2.6.0",
     "react-native-svg": "^15.4.0",
     "react-native-view-shot": "^4.0.3"
   },
