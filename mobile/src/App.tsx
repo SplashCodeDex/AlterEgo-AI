@@ -17,9 +17,7 @@ function App(): React.JSX.Element {
     async function initAppCheck() {
       try {
         await appCheck().activate('production'); // Use 'debug' for development
-        console.log('Firebase App Check activated successfully.');
       } catch (error) {
-        console.error('Failed to activate Firebase App Check:', error);
       }
     }
     initAppCheck();

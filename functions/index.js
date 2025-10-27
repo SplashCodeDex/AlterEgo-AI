@@ -50,7 +50,7 @@ async function applyWatermark(imageBuffer) {
  * @param {string} prompt The text prompt to guide the transformation.
  * @return {Promise<{success: boolean, imageDataUrl: string}>} A promise that resolves with the result.
  */
-async function _transformImageLogic(imageDataUrl, prompt) {
+async function _transformImageLogic(imageDataUrl, prompt, caption) {
     if (!imageDataUrl || !prompt) {
         throw new Error('Missing "imageDataUrl" or "prompt".');
     }
@@ -65,10 +65,16 @@ async function _transformImageLogic(imageDataUrl, prompt) {
     try {
         const imagePart = { inlineData: { data: base64Data, mimeType } };
         const textPart = { text: prompt };
+        const stylePart = { text: `Style: ${caption}` };
+
+        const contents = { parts: [imagePart, textPart] };
+        if (caption) {
+            contents.parts.push(stylePart);
+        }
 
         const response = await ai.models.generateContent({
             model: 'gemini-1.5-flash',
-            contents: { parts: [imagePart, {text: prompt}] },
+            contents: contents,
             config: { responseModalities: [Modality.IMAGE, Modality.TEXT] },
         });
         
@@ -111,13 +117,12 @@ exports.transformImage = functions.runWith({
     // The authentication check below is now redundant if you only want to allow authenticated users *from your app*.
     // If you want to allow *any* authenticated Firebase user (not just from your app), you can keep it.
     // For this use case (protecting a public API), we will remove it and rely on App Check.
-    /*
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'The function must be called while authenticated.');
     }
-    */
+
     try {
-        return await _transformImageLogic(data.imageDataUrl, data.prompt);
+        return await _transformImageLogic(data.imageDataUrl, data.prompt, data.caption);
     } catch (error) {
         // Log the error and throw a specific HttpsError for the client
         console.error("Error in transformImage (onCall):", error);
@@ -200,10 +205,10 @@ exports.transformImageHTTP = functions.https.onRequest((req, res) => {
         }
 
         try {
-            const { imageDataUrl, prompt } = req.body;
+            const { imageDataUrl, prompt, caption } = req.body;
 
             // Use the shared logic
-            const result = await _transformImageLogic(imageDataUrl, prompt);
+            const result = await _transformImageLogic(imageDataUrl, prompt, caption);
 
             return res.status(200).json(result);
 
