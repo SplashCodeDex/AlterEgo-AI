@@ -6,7 +6,7 @@ import React, { createContext, useContext, useReducer, useCallback, useRef, Reac
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIAP } from '../hooks/useIAP';
 import { useToasts } from '../components/Toaster';
-import { generateStyledImage } from '../services/geminiService';
+import { generateStyledImage } from '../services/geminiService.client';
 import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import { saveToCameraRoll, shareImage } from '../lib/nativeSharing';
 import type { GeneratedImage, HistorySession, FavoritedImage } from '../types';
@@ -77,7 +77,7 @@ const initialState: AppState = {
     currentStyles: DEFAULT_STYLES,
     selectedStyles: new Set(DEFAULT_STYLES.map(s => s.caption)),
     shareableView: null,
-    credits: 122,
+    credits: 9999,
     isPro: false,
     favoritedImages: {},
     history: [],
@@ -392,7 +392,7 @@ export const AppProvider = ({ children, onReady }: { children: ReactNode; onRead
                 const favoritesStr = await AsyncStorage.getItem('alterEgoFavorites');
                 const historyStr = await AsyncStorage.getItem('alterEgoHistory');
                 const payload: Partial<AppState> = {
-                    credits: creditsStr ? JSON.parse(creditsStr) : 18,
+                    credits: creditsStr ? JSON.parse(creditsStr) : 9999,
                     favoritedImages: favoritesStr ? JSON.parse(favoritesStr) : {},
                     history: historyStr ? JSON.parse(historyStr) : [],
                 };
