@@ -75,7 +75,7 @@ async function _transformImageLogic(imageDataUrl, prompt, caption) {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: contents,
-            config: { responseModalities: [Modality.IMAGE, Modality.TEXT] },
+            config: { responseModalities: [Modality.IMAGE] },
         });
         
         const imagePartFromResponse = response.candidates?.[0]?.content?.parts?.find(part => part.inlineData);

@@ -9,7 +9,14 @@ import type { FirebaseFunctionsTypes } from '@react-native-firebase/functions';
 interface TransformResult {
     success: boolean;
     imageDataUrl: string;
-    error?: string;
+}
+
+// Custom Error for the client
+export class GenerationError extends Error {
+    constructor(message: string, public code: functions.HttpsErrorCode) {
+        super(message);
+        this.name = 'GenerationError';
+    }
 }
 
 /**
@@ -19,6 +26,7 @@ interface TransformResult {
  * @param prompt The prompt to guide the image generation.
  * @param caption The style caption.
  * @returns A promise that resolves to a base64-encoded image data URL from the backend.
+ * @throws {GenerationError} If the Firebase Function call fails.
  */
 export async function generateStyledImage(imageDataUrl: string, prompt: string, caption: string): Promise<string> {
   try {
@@ -35,14 +43,16 @@ export async function generateStyledImage(imageDataUrl: string, prompt: string, 
     const data = result.data as TransformResult;
 
     if (!data.success || !data.imageDataUrl) {
-      throw new Error(data.error || 'The backend function returned an unsuccessful response.');
+      // This case should ideally not be hit if the backend always throws an error on failure
+      throw new GenerationError('The backend function returned an unsuccessful response.', 'unknown');
     }
 
     return data.imageDataUrl;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Firebase Functions call failed:', error);
-    // Re-throw the error so it can be caught by the UI layer (e.g., AppContext)
-    // and displayed to the user.
-    throw error;
+    // Re-throw a more specific error to be caught by the UI layer
+    const code = error.code || 'internal';
+    const message = error.message || 'An unexpected error occurred during image generation.';
+    throw new GenerationError(message, code as functions.HttpsErrorCode);
   }
 }

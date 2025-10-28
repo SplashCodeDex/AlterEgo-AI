@@ -6,7 +6,7 @@ import React, { createContext, useContext, useReducer, useCallback, useRef, Reac
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useIAP } from '../hooks/useIAP';
 import { useToasts } from '../components/Toaster';
-import { generateStyledImage } from '../services/geminiService.client';
+import { generateStyledImage, GenerationError } from '../services/geminiService';
 import { launchCamera, launchImageLibrary, ImagePickerResponse } from 'react-native-image-picker';
 import { saveToCameraRoll, shareImage } from '../lib/nativeSharing';
 import type { GeneratedImage, HistorySession, FavoritedImage } from '../types';
@@ -234,11 +234,11 @@ const createActions = (
                 finalImages = { ...finalImages, [originalStyle]: newImage };
                 dispatch({ type: 'UPDATE_GENERATED_IMAGE', payload: { style: originalStyle, image: newImage } });
             } catch (err) {
-                 const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
-                 const errorImage: GeneratedImage = { caption, status: 'error', error: errorMessage };
-                 finalImages = { ...finalImages, [originalStyle]: errorImage };
-                 dispatch({ type: 'UPDATE_GENERATED_IMAGE', payload: { style: originalStyle, image: errorImage } });
-                 addToast(`Failed to generate: ${caption}`, 'error');
+                const errorMessage = err instanceof GenerationError ? err.message : "An unknown error occurred.";
+                const errorImage: GeneratedImage = { caption, status: 'error', error: errorMessage };
+                finalImages = { ...finalImages, [originalStyle]: errorImage };
+                dispatch({ type: 'UPDATE_GENERATED_IMAGE', payload: { style: originalStyle, image: errorImage } });
+                addToast(`Failed to generate: ${caption}`, 'error');
             }
         }
         
@@ -306,7 +306,7 @@ const createActions = (
                 const resultUrl = await generateStyledImage(state.uploadedImage, `Reimagine the person in this photo in the style of ${newCaption}.`, newCaption);
                 dispatch({ type: 'UPDATE_GENERATED_IMAGE', payload: { style, image: { status: 'done', url: resultUrl, caption: newCaption } } });
             } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+                const errorMessage = err instanceof GenerationError ? err.message : "An unknown error occurred.";
                 dispatch({ type: 'UPDATE_GENERATED_IMAGE', payload: { style, image: { status: 'error', error: errorMessage, caption: newCaption } } });
                 addToast(`Failed to regenerate: ${newCaption}`, 'error');
             }
